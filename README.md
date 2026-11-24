@@ -1,3 +1,6 @@
+<img width="1850" height="925" alt="innvoice" src="https://github.com/user-attachments/assets/d011b13e-5910-4671-afab-e6bd0f2a707e" />
+<img width="1850" height="925" alt="invvoice_view" src="https://github.com/user-attachments/assets/7270ea45-e179-4b6a-92de-4b86b1354abc" />
+<img width="1846" height="905" alt="job_cards" src="https://github.com/user-attachments/assets/dce39e33-1c95-4042-98e8-69afd6ff51a3" />
 <img width="1817" height="936" alt="dash_board" src="https://github.com/user-attachments/assets/f73c3e6e-814d-40d6-9cfb-38e28b46c288" />
 # SOCRAT — Car Service Center Management System
 
@@ -150,8 +153,26 @@ PL/SQL packages hold the business logic (for example `PKG_PAYMENT` for paid and 
 |---|---|---|
 | ![Dashboard](docs/screenshots/dashboard.<img width="1817" height="936" alt="dash_board" src="https://github.com/user-attachments/assets/e2804593-b9e5-4c9d-a5db-a6b69c108b9c" />
 png) | ![Job cards](docs/screenshots/job-cards.png) | ![Invoice](docs/screenshots/invoice.png) |
+<img width="1811" height="951" alt="Screenshot From 2026-11-24 05-07-18" src="https://github.com/user-attachments/assets/25debac8-edaf-4f02-b1f3-ffe1b62bdaf6" />
+<img width="1850" height="925" alt="parts" src="https://github.com/user-attachments/assets/9ce8da1c-b62f-4a07-b649-3abe8a8133b2" />
+<img width="1850" height="925" alt="part_issued" src="https://github.com/user-attachments/assets/39507df8-8239-4568-91d6-f3343743c7ab" />
+<img width="1850" height="925" alt="notification" src="https://github.com/user-attachments/assets/db850bd8-b2cb-4b8a-8384-a1d6fa02608d" />
+<img width="1850" height="925" alt="create_account" src="https://github.com/user-attachments/assets/6aece2cd-20cc-42a6-a283-6bcda2cb58e7" />
+<img width="1850" height="925" alt="client_home_page" src="https://github.com/user-attachments/assets/3df78faa-8e9d-4ae1-8f91-899056743fc0" />
+<img width="1846" height="905" alt="car_wash" src="https://github.com/user-attachments/assets/167617f9-61a4-4d1f-9b59-662c22f4ef9e" />
+<img width="1846" height="905" alt="cars_customers" src="https://github.com/user-attachments/assets/2d012a04-1a50-4b73-9f49-d80c9ca7dd9f" />
+<img width="1846" height="905" alt="car_lo" src="https://github.com/user-attachments/assets/6f77d043-47bf-4fc9-b2bb-36c62ee99ce4" />
+<img width="1850" height="925" alt="car_client" src="https://github.com/user-attachments/assets/ff9ff0c6-2b26-4c5f-b4cf-7951ea7ed49e" />
+<img width="1850" height="925" alt="appointemetn2" src="https://github.com/user-attachments/assets/a779cd30-335b-427b-b3ed-433e93da0099" />
+<img width="1850" height="925" alt="appointement" src="https://github.com/user-attachments/assets/9c5ed930-e212-4a7d-a8ff-767173332e13" />
+<img width="1850" height="925" alt="add_car_client" src="https://github.com/user-attachments/assets/bce642ac-5245-4b50-bb81-e19d1f9bec7e" />
+<img width="1850" height="925" alt="log_in" src="https://github.com/user-attachments/assets/076c7f8e-3eb6-48cc-8fdd-96f24ae63c25" />
+<img width="1850" height="925" alt="techinacls" src="https://github.com/user-attachments/assets/294f7367-b414-4210-81a3-9117aba51b7c" />
 
-| Login | Technicians | My cars |
+| Login | Technicians | My cars |<img width="1846" height="905" alt="الحجوزات" src="https://github.com/user-attachments/assets/fafa12a3-ac5c-4c98-aedc-6558556e9ba8" />
+<img width="1850" height="925" alt="user_roles" src="https://github.com/user-attachments/assets/cedc12e7-0b9b-4759-b8db-4dc4a6113771" />
+<img width="1850" height="925" alt="supplies" src="https://github.com/user-attachments/assets/b8634623-01f7-4c54-b720-9bea2681d714" />
+
 |---|---|---|
 | ![Login](docs/screenshots/login.png) | ![Technicians](docs/screenshots/technicians.png) | ![My cars](docs/screenshots/my-cars.png) |
 
