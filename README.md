@@ -1,3 +1,4 @@
+<img width="1817" height="936" alt="dash_board" src="https://github.com/user-attachments/assets/f73c3e6e-814d-40d6-9cfb-38e28b46c288" />
 # SOCRAT — Car Service Center Management System
 
 **SOCRAT** (صيانة السيارات الألمانية) is a web application for a German-car service center, built with **Oracle APEX 26** and **Oracle Database**. It runs the whole visit of a car: the customer books online, reception opens a job card, technicians and the store work on it, the car goes through the wash, and the cashier issues the invoice and records payments. The manager follows everything from a live dashboard.
@@ -147,7 +148,8 @@ PL/SQL packages hold the business logic (for example `PKG_PAYMENT` for paid and 
 
 | Dashboard | Job cards | Invoice |
 |---|---|---|
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Job cards](docs/screenshots/job-cards.png) | ![Invoice](docs/screenshots/invoice.png) |
+| ![Dashboard](docs/screenshots/dashboard.<img width="1817" height="936" alt="dash_board" src="https://github.com/user-attachments/assets/e2804593-b9e5-4c9d-a5db-a6b69c108b9c" />
+png) | ![Job cards](docs/screenshots/job-cards.png) | ![Invoice](docs/screenshots/invoice.png) |
 
 | Login | Technicians | My cars |
 |---|---|---|
