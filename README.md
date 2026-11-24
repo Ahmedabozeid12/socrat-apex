@@ -1,7 +1,4 @@
-<img width="1850" height="925" alt="innvoice" src="https://github.com/user-attachments/assets/d011b13e-5910-4671-afab-e6bd0f2a707e" />
-<img width="1850" height="925" alt="invvoice_view" src="https://github.com/user-attachments/assets/7270ea45-e179-4b6a-92de-4b86b1354abc" />
-<img width="1846" height="905" alt="job_cards" src="https://github.com/user-attachments/assets/dce39e33-1c95-4042-98e8-69afd6ff51a3" />
-<img width="1817" height="936" alt="dash_board" src="https://github.com/user-attachments/assets/f73c3e6e-814d-40d6-9cfb-38e28b46c288" />
+
 # SOCRAT — Car Service Center Management System
 
 **SOCRAT** (صيانة السيارات الألمانية) is a web application for a German-car service center, built with **Oracle APEX 26** and **Oracle Database**. It runs the whole visit of a car: the customer books online, reception opens a job card, technicians and the store work on it, the car goes through the wash, and the cashier issues the invoice and records payments. The manager follows everything from a live dashboard.
@@ -168,7 +165,10 @@ png) | ![Job cards](docs/screenshots/job-cards.png) | ![Invoice](docs/screenshot
 <img width="1850" height="925" alt="add_car_client" src="https://github.com/user-attachments/assets/bce642ac-5245-4b50-bb81-e19d1f9bec7e" />
 <img width="1850" height="925" alt="log_in" src="https://github.com/user-attachments/assets/076c7f8e-3eb6-48cc-8fdd-96f24ae63c25" />
 <img width="1850" height="925" alt="techinacls" src="https://github.com/user-attachments/assets/294f7367-b414-4210-81a3-9117aba51b7c" />
-
+<img width="1850" height="925" alt="innvoice" src="https://github.com/user-attachments/assets/d011b13e-5910-4671-afab-e6bd0f2a707e" />
+<img width="1850" height="925" alt="invvoice_view" src="https://github.com/user-attachments/assets/7270ea45-e179-4b6a-92de-4b86b1354abc" />
+<img width="1846" height="905" alt="job_cards" src="https://github.com/user-attachments/assets/dce39e33-1c95-4042-98e8-69afd6ff51a3" />
+<img width="1817" height="936" alt="dash_board" src="https://github.com/user-attachments/assets/f73c3e6e-814d-40d6-9cfb-38e28b46c288" />
 | Login | Technicians | My cars |<img width="1846" height="905" alt="الحجوزات" src="https://github.com/user-attachments/assets/fafa12a3-ac5c-4c98-aedc-6558556e9ba8" />
 <img width="1850" height="925" alt="user_roles" src="https://github.com/user-attachments/assets/cedc12e7-0b9b-4759-b8db-4dc4a6113771" />
 <img width="1850" height="925" alt="supplies" src="https://github.com/user-attachments/assets/b8634623-01f7-4c54-b720-9bea2681d714" />
