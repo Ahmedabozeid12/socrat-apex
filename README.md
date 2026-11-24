@@ -157,10 +157,10 @@ PL/SQL packages hold the business logic (for example `PKG_PAYMENT` for paid and 
 
 | Role | Username | Password |
 |---|---|---|
-| Manager | `demo_manager` | *set your own* |
-| Reception | `demo_reception` | *set your own* |
-| Storekeeper | `demo_store` | *set your own* |
-| Customer | `01000000000` | *set your own* |
+| Manager | `manager` | 12345 |
+| Reception | `RECEPTION` | 12345|
+| Storekeeper | `STORE` | 12345 |
+| Customer | `01033921476` | *123456789* |
 
 ## Roadmap
 
