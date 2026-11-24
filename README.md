@@ -159,7 +159,39 @@ PL/SQL packages hold the business logic (for example `PKG_PAYMENT` for paid and 
 | ![Dashboard](docs/screenshots/dashboard.png) | ![Job cards](docs/screenshots/job-cards.png) | ![Invoice](docs/screenshots/invoice.png) |
 
 | Login | Technicians | My cars |
-|---|---|---|
+|---|---|---|<img width="1846" height="905" alt="job_cards" src="https://github.com/user-attachments/assets/44f0e95a-a132-4217-801b-5499caf597bf" />
+<img width="1861" height="932" alt="innvouces" src="https://github.com/user-attachments/assets/e8aefd86-4b18-4f38-aa5f-5dd9b40e3269" />
+<img width="1850" height="925" alt="car_client" src="https://github.com/user-attachments/assets/aa27fa93-35ea-4b44-8380-b621e088aec9" />
+<img width="1850" height="925" alt="appointemetn2" src="https://github.com/user-attachments/assets/e2810159-ad45-4f44-bb7e-4e1ca7e3807e" />
+<img width="1850" height="925" alt="innvoice2" src="https://github.com/user-attachments/assets/c3b76427-a614-4a66-8d42-695b823d13b8" />
+<img width="1850" height="925" alt="appointement" src="https://github.com/user-attachments/assets/789df467-b480-49a3-bd18-9130cbdb3883" />
+<img width="1850" height="925" alt="innvoice" src="https://github.com/user-attachments/assets/b6697523-90f9-4232-8e00-28eb1ed29f41" />
+<img width="1850" height="925" alt="dashboard_light" src="https://github.com/user-attachments/assets/9fdf1a8a-1c9f-4202-82e1-fc0363b896b9" />
+<img width="1850" height="925" alt="add_car_client" src="https://github.com/user-attachments/assets/89181a4d-1eb7-4fe9-b254-a669180f8635" />
+<img width="1850" height="925" alt="create_account" src="https://github.com/user-attachments/assets/15a0ea34-243a-4d63-9984-ea230ad79fa5" />
+<img width="1850" height="925" alt="client_home_page" src="https://github.com/user-attachments/assets/c7fab1f1-331b-47cc-a402-a69187da5c19" />
+<img width="1846" height="905" alt="car_wash" src="https://github.com/user-attachments/assets/510fa6ad-3d03-4b97-8a7d-f6e164112e05" />
+<img width="1846" height="905" alt="cars_customers" src="https://github.com/user-attachments/assets/d7c617ca-d1ee-427a-a6a1-c04fbd60ecdc" />
+<img width="1846" height="905" alt="car_lo" src="https://github.com/user-attachments/assets/c2433695-95ab-49cc-8869-fb8c2b703a0b" />
+<img width="1817" height="936" alt="dash_board" src="https://github.com/user-attachments/assets/16bf94ec-bc74-44ad-9d6e-1ac67873c52f" />
+<img width="1861" height="932" alt="receip_item" src="https://github.com/user-attachments/assets/bfcc1620-8cca-4378-92a4-bdcdca2d4b48" />
+<img width="1850" height="925" alt="parts" src="https://github.com/user-attachments/assets/70ed3352-03cf-4580-a14e-67da4e993eeb" />
+<img width="1850" height="925" alt="part_issued" src="https://github.com/user-attachments/assets/7d91d8f3-f5b5-45a1-bea0-b48b73252c96" />
+<img width="1850" height="925" alt="notification" src="https://github.com/user-attachments/assets/78ea6e54-db76-4fef-b011-0cd4eb1ebfe9" />
+<img width="1850" height="925" alt="log_in" src="https://github.com/user-attachments/assets/f34026d6-1141-4c9a-a09c-7303c78b0420" />
+<img width="1861" height="932" alt="job_cardss" src="https://github.com/user-attachments/assets/019bf122-0fe1-4e60-8391-b008247a45a3" />
+<img width="1846" height="905" alt="job_cards" src="https://github.com/user-attachments/assets/f5b7c784-c005-47a7-ba47-c13160d69e9c" />
+<img width="1850" height="925" alt="invvoice_vuew2" src="https://github.com/user-attachments/assets/7cf5a42b-a43b-498c-97d7-6de401e3e95f" />
+<img width="1850" height="925" alt="invvoice_view" src="https://github.com/user-attachments/assets/5eb4dce4-dcc2-41a2-be8f-08d9589f467b" />
+<img width="1846" height="905" alt="الحجوزات" src="https://github.com/user-attachments/assets/afcbc7c3-b661-4ce5-b03c-c755f441a3e6" />
+<img width="1850" height="925" alt="user_roles" src="https://github.com/user-attachments/assets/dba43549-9f87-4751-b0b9-2e15aeaa770e" />
+<img width="1850" height="925" alt="supplies" src="https://github.com/user-attachments/assets/a8cb576d-0306-4d73-a372-08272bf8afae" />
+<img width="1861" height="932" alt="servicess" src="https://github.com/user-attachments/assets/a669e0e4-52e3-45cb-9905-365ec2a232cf" />
+<img width="1850" height="925" alt="services" src="https://github.com/user-attachments/assets/adac60f1-54a8-4772-a88d-faf52378bfd1" />
+<img width="1811" height="951" alt="Screenshot From 2026-11-24 05-07-18" src="https://github.com/user-attachments/assets/c0c08bea-02b6-4e30-a6b1-bcde95729cba" />
+<img width="1861" height="932" alt="recepits" src="https://github.com/user-attachments/assets/620ee5a2-567c-43e5-9c6f-143590303f2b" />
+<img width="1850" height="925" alt="techinacls" src="https://github.com/user-attachments/assets/88f30eca-c187-45db-8e01-ae0ac5bd9dac" />
+
 | ![Login](docs/screenshots/login.png) | ![Technicians](docs/screenshots/technicians.png) | ![My cars](docs/screenshots/my-cars.png) |
 
 ## Demo accounts
