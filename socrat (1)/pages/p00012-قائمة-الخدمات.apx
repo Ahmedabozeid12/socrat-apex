@@ -1,0 +1,368 @@
+page 12 (
+    name: قائمة الخدمات
+    alias: قائمة-الخدمات
+    title: قائمة الخدمات
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    css {
+        inline:
+            ```css
+            .st-badge{display:inline-block;padding:2px 12px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+            .st-ready{background:rgba(74,222,159,.16);color:#4ADE9F}
+            .st-cancel{background:rgba(170,176,188,.16);color:#AAB0BC}
+            #svc-search .t-Region-body .row{align-items:center}
+            #svc-search .t-Button{width:100%;height:48px;justify-content:center;white-space:nowrap}
+            ```
+    }
+
+    region breadcrumb (
+        name: Breadcrumb
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region بحث (
+        name: بحث
+        type: staticContent
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+        }
+    )
+
+    region قائمة-الخدمات (
+        name: قائمة الخدمات
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select service_id as edit_id,
+                       service_id,
+                       service_name,
+                       category,
+                       to_char(standard_price, 'FM999G999D00') as price,
+                       estimated_minutes,
+                       case is_active when 'Y' then 'مفعّلة' else 'موقوفة' end as active_label,
+                       case is_active when 'Y' then 'st-ready' else 'st-cancel' end as active_class
+                  from services
+                 where :P12_SEARCH is null
+                    or upper(service_name) like '%' || upper(:P12_SEARCH) || '%'
+                    or upper(category)     like '%' || upper(:P12_SEARCH) || '%'
+                 order by service_name
+                ```
+            pageItemsToSubmit: P12_SEARCH
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--stretch
+                t-Report--staticRowColors
+                t-Report--rowHighlight
+                t-Report--horizontalBorders
+                t-Report--hideNoPagination
+            ]
+        }
+        messages {
+            whenNoDataFound: مفيش خدمات مطابقة
+        }
+
+        column ACTIVE_CLASS (
+            reportColumnQueryId: 8
+            derivedColumn: N
+            type: hidden
+            layout {
+                sequence: 8
+            }
+        )
+
+        column ACTIVE_LABEL (
+            reportColumnQueryId: 7
+            derivedColumn: N
+            heading {
+                heading: <span class="fa fa-toggle-on" aria-hidden="true"></span> الحالة
+                alignment: end
+            }
+            layout {
+                sequence: 7
+            }
+            columnFormatting {
+                htmlExpression: <span class="st-badge #ACTIVE_CLASS#">#ACTIVE_LABEL#</span>
+            }
+            sorting {
+                sortable: false
+            }
+            security {
+                escapeSpecialChars: false
+            }
+        )
+
+        column CATEGORY (
+            reportColumnQueryId: 4
+            derivedColumn: N
+            heading {
+                heading: <span class="fa fa-folder-o" aria-hidden="true"></span> التصنيف
+                alignment: end
+            }
+            layout {
+                sequence: 4
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column EDIT_ID (
+            reportColumnQueryId: 1
+            derivedColumn: N
+            type: hidden
+            layout {
+                sequence: 1
+            }
+        )
+
+        column ESTIMATED_MINUTES (
+            reportColumnQueryId: 6
+            derivedColumn: N
+            heading {
+                heading: <span class="fa fa-clock-o" aria-hidden="true"></span> الوقت (دقيقة)
+                alignment: end
+            }
+            layout {
+                sequence: 6
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column PRICE (
+            reportColumnQueryId: 5
+            derivedColumn: N
+            heading {
+                heading: <span class="fa fa-money" aria-hidden="true"></span> السعر (ج.م)
+                alignment: end
+            }
+            layout {
+                sequence: 5
+            }
+            appearance {
+                formatMask: 999G999G990
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column SERVICE_ID (
+            reportColumnQueryId: 2
+            derivedColumn: N
+            type: hidden
+            layout {
+                sequence: 2
+            }
+        )
+
+        column SERVICE_NAME (
+            reportColumnQueryId: 3
+            derivedColumn: N
+            type: link
+            heading {
+                heading: <span class="fa fa-wrench" aria-hidden="true"></span> اسم الخدمة
+                alignment: end
+            }
+            layout {
+                sequence: 3
+            }
+            link {
+                target: {
+                    page: 16
+                    items: {
+                        P16_SERVICE_ID: #SERVICE_ID#
+                    }
+                }
+                linkText: #SERVICE_NAME#
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+    )
+
+    pageItem P12_SEARCH (
+        type: textField
+        label {
+            label: اسم الخدمة أو التصنيف
+            alignment: left
+        }
+        layout {
+            sequence: 10
+            region: @بحث
+            slot: regionBody
+            alignment: left
+            columnSpan: 8
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-search
+            width: 30
+            valuePlaceholder: مثال: فحص كهرباء
+        }
+    )
+
+    button search (
+        buttonName: SEARCH
+        label: بحث
+        layout {
+            sequence: 20
+            region: @بحث
+            slot: regionBody
+            columnSpan: 2
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+                t-Button--stretch
+            ]
+            icon: fa-search
+        }
+        behavior {
+            executeValidations: false
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button show-all_1 (
+        buttonName: show_all
+        label: عرض الكل
+        layout {
+            sequence: 30
+            region: @بحث
+            slot: regionBody
+            startNewRow: false
+            columnSpan: 2
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+                t-Button--stretch
+            ]
+            cssClasses: s-btn-outline
+            icon: fa-list
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 12
+                clearCache: 12
+            }
+        }
+    )
+
+    button اضافة (
+        buttonName: اضافة
+        label: إضافة خدمة
+        layout {
+            sequence: 10
+            region: @قائمة-الخدمات
+            slot: aboveBox
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-plus
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 16
+                clearCache: 16
+            }
+        }
+    )
+
+    dynamicAction new (
+        name: New
+        execution {
+            sequence: 10
+        }
+        when {
+            event: apexafterclosedialog
+            selectionType: region
+            region: @قائمة-الخدمات
+        }
+
+        action native-javascript-code (
+            action: executeJsCode
+            settings {
+                jsCode: apex.message.showPageSuccess('تم حفظ الخدمة بنجاح ✅');
+            }
+            execution {
+                sequence: 20
+                fireOnInit: false
+            }
+        )
+
+        action native-refresh (
+            action: refresh
+            affectedElements {
+                selectionType: region
+                region: @قائمة-الخدمات
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+)
+

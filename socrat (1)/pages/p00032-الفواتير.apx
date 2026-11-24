@@ -1,0 +1,451 @@
+page 32 (
+    name: الفواتير
+    alias: الفواتير
+    title: الفواتير
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    css {
+        inline:
+            ```css
+            #inv-search .t-Region-body .row{align-items:center}
+            #inv-search .t-Button{width:100%;height:48px;justify-content:center;white-space:nowrap}
+            .late-date{color:#ff6b6f;font-weight:700}
+            ```
+    }
+
+    region breadcrumb (
+        name: Breadcrumb
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region الفاتورة (
+        name: الفاتورة
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select x.invoice_id,
+                       x.inv_no,
+                       x.invoice_date,
+                       x.source_txt,
+                       x.customer_name,
+                       to_char(x.total_amount, 'FM999G999G990D00') || ' ج.م' as total_amount,
+                       to_char(x.paid,         'FM999G999G990D00') || ' ج.م' as paid,
+                       to_char(x.remaining,    'FM999G999G990D00') || ' ج.م' as remaining,
+                       case x.pay_status when 'PAID' then 'مسددة' when 'PARTIAL' then 'جزئي' else 'غير مسددة' end as status_label,
+                       case x.pay_status when 'PAID' then 'st-ready' when 'PARTIAL' then 'st-wait' else 'st-late' end as status_class,
+                       case when x.remaining > 0 then 'late-date' end as remaining_class,
+                       '<a class="t-Button t-Button--small t-Button--noLabel t-Button--icon" title="عرض" href="'
+                         || apex_page.get_url(p_page => 31, p_items => 'P31_INVOICE_ID', p_values => x.invoice_id)
+                         || '"><span class="fa fa-eye" aria-hidden="true"></span></a>'
+                       || case when x.remaining > 0 then
+                            ' <a class="t-Button t-Button--small t-Button--hot t-Button--noLabel t-Button--icon" title="تسجيل دفعة" href="'
+                            || apex_page.get_url(p_page => 31, p_items => 'P31_INVOICE_ID', p_values => x.invoice_id)
+                            || '#payments"><span class="fa fa-money" aria-hidden="true"></span></a>'
+                          end as actions
+                  from (select i.invoice_id,
+                               'INV-' || lpad(i.invoice_id, 4, '0')   as inv_no,
+                               to_char(i.invoice_date, 'DD/MM/YYYY')  as invoice_date,
+                               case when i.job_card_id is not null then 'كارت #' || i.job_card_id
+                                    else 'غسيل #' || i.car_wash_id end as source_txt,
+                               nvl(cu.full_name, '—')                 as customer_name,
+                               i.total_amount,
+                               nvl(p.paid, 0)                         as paid,
+                               i.total_amount - nvl(p.paid, 0)        as remaining,
+                               case
+                                 when i.total_amount - nvl(p.paid, 0) <= 0 then 'PAID'
+                                 when nvl(p.paid, 0) = 0                   then 'UNPAID'
+                                 else 'PARTIAL'
+                               end                                    as pay_status
+                          from invoices i
+                          left join (select invoice_id, sum(amount) as paid
+                                       from payments
+                                      group by invoice_id) p on p.invoice_id = i.invoice_id
+                          left join job_cards c  on c.job_card_id = i.job_card_id
+                          left join car_wash  w  on w.car_wash_id = i.car_wash_id
+                          left join vehicles  v  on v.vehicle_id  = nvl(c.vehicle_id, w.vehicle_id)
+                          left join customers cu on cu.customer_id = v.customer_id) x
+                 where (:P32_STATUS is null
+                        or (:P32_STATUS = 'OPEN' and x.pay_status <> 'PAID')
+                        or x.pay_status = :P32_STATUS)
+                   and (:P32_SEARCH is null
+                        or upper(x.inv_no)        like '%' || upper(:P32_SEARCH) || '%'
+                        or upper(x.customer_name) like '%' || upper(:P32_SEARCH) || '%')
+                 order by x.invoice_id desc
+                ```
+            pageItemsToSubmit: [
+                P32_SEARCH
+                P32_STATUS
+            ]
+        }
+        layout {
+            sequence: 70
+            slot: body
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--staticRowColors
+                t-Report--rowHighlight
+                t-Report--horizontalBorders
+            ]
+        }
+
+        column ACTIONS (
+            reportColumnQueryId: 12
+            derivedColumn: N
+            heading {
+                heading: الفاتورة
+                alignment: end
+            }
+            layout {
+                sequence: 120
+            }
+            sorting {
+                sortable: false
+            }
+            security {
+                escapeSpecialChars: false
+            }
+        )
+
+        column CUSTOMER_NAME (
+            reportColumnQueryId: 5
+            derivedColumn: N
+            heading {
+                heading: العميل
+                alignment: end
+            }
+            layout {
+                sequence: 50
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column INVOICE_DATE (
+            reportColumnQueryId: 3
+            derivedColumn: N
+            heading {
+                heading: التاريخ
+                alignment: end
+            }
+            layout {
+                sequence: 30
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column INVOICE_ID (
+            reportColumnQueryId: 1
+            derivedColumn: N
+            type: hidden
+            layout {
+                sequence: 10
+            }
+        )
+
+        column INV_NO (
+            reportColumnQueryId: 2
+            derivedColumn: N
+            type: hidden
+            layout {
+                sequence: 20
+            }
+        )
+
+        column PAID (
+            reportColumnQueryId: 7
+            derivedColumn: N
+            heading {
+                heading: المدفوع
+                alignment: end
+            }
+            layout {
+                sequence: 70
+            }
+            appearance {
+                formatMask: 999G999G990D00
+            }
+            columnFormatting {
+                htmlExpression: #PAID# ج.م
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column REMAINING (
+            reportColumnQueryId: 8
+            derivedColumn: N
+            heading {
+                heading: المتبقي
+                alignment: end
+            }
+            layout {
+                sequence: 80
+            }
+            columnFormatting {
+                htmlExpression: <span class="#REMAINING_CLASS#">#REMAINING#</span>
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column REMAINING_CLASS (
+            reportColumnQueryId: 11
+            derivedColumn: N
+            type: hidden
+            layout {
+                sequence: 110
+            }
+        )
+
+        column SOURCE_TXT (
+            reportColumnQueryId: 4
+            derivedColumn: N
+            heading {
+                heading: المصدر
+                alignment: end
+            }
+            layout {
+                sequence: 40
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column STATUS_CLASS (
+            reportColumnQueryId: 10
+            derivedColumn: N
+            type: hidden
+            layout {
+                sequence: 100
+            }
+        )
+
+        column STATUS_LABEL (
+            reportColumnQueryId: 9
+            derivedColumn: N
+            heading {
+                heading: الحالة
+                alignment: end
+            }
+            layout {
+                sequence: 90
+            }
+            columnFormatting {
+                htmlExpression: <span class="st-badge #STATUS_CLASS#">#STATUS_LABEL#</span>
+            }
+            sorting {
+                sortable: false
+            }
+            security {
+                escapeSpecialChars: false
+            }
+        )
+
+        column TOTAL_AMOUNT (
+            reportColumnQueryId: 6
+            derivedColumn: N
+            heading {
+                heading: الصافي
+                alignment: end
+            }
+            layout {
+                sequence: 60
+            }
+            appearance {
+                formatMask: 999G999G990D00
+            }
+            columnFormatting {
+                htmlExpression: #TOTAL_AMOUNT# ج.م
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+    )
+
+    pageItem P32_SEARCH (
+        type: textField
+        label {
+            label: رقم الفاتورة أو اسم العميل
+            alignment: left
+        }
+        settings {
+            submitWhenEnterPressed: true
+        }
+        layout {
+            sequence: 20
+            slot: body
+            alignment: left
+            columnSpan: 5
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            width: 30
+        }
+    )
+
+    pageItem P32_STATUS (
+        type: selectList
+        label {
+            label: الحالة
+            alignment: left
+        }
+        lov {
+            type: staticValues
+            staticValues: STATIC:مدفوعة;PAID,غير مسددة;OPEN,جزئيًا;PARTIAL
+        }
+        layout {
+            sequence: 30
+            slot: body
+            alignment: left
+            startNewRow: false
+            columnSpan: 3
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            height: 1
+        }
+    )
+
+    button create (
+        buttonName: create
+        label: إنشاء فاتورة
+        layout {
+            sequence: 10
+            region: @الفاتورة
+            slot: aboveBox
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-plus
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 28
+                clearCache: 28
+            }
+        }
+    )
+
+    button search (
+        buttonName: SEARCH
+        label: بحث
+        layout {
+            sequence: 50
+            slot: body
+            columnSpan: 2
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+                t-Button--stretch
+            ]
+            icon: fa-search
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button show-all (
+        buttonName: show_all
+        label: عرض الكل
+        layout {
+            sequence: 60
+            slot: body
+            startNewRow: false
+            columnSpan: 2
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+                t-Button--stretch
+            ]
+            cssClasses: s-btn-outline
+            icon: fa-list
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 32
+                clearCache: 32
+            }
+        }
+    )
+
+    dynamicAction new (
+        name: New
+        execution {
+            sequence: 10
+        }
+        when {
+            event: apexafterclosedialog
+            selectionType: button
+            button: @create
+        }
+
+        action native-javascript-code (
+            action: executeJsCode
+            settings {
+                jsCode: location.reload()
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+)
+

@@ -1,0 +1,275 @@
+page 34 (
+    name: طلب غسيل
+    alias: طلب-غسيل
+    title: طلب غسيل
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @/modal-dialog
+        templateOptions: #DEFAULT#
+    }
+
+    region new (
+        name: Buttons
+        type: staticContent
+        layout {
+            sequence: 80
+            slot: dialogFooter
+        }
+        appearance {
+            template: @/buttons-container
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    pageItem P34_JOB_CARD_ID (
+        type: selectList
+        label {
+            label: كارت الصيانة (اختياري)
+            alignment: left
+        }
+        lov {
+            type: sharedComponent
+            lov: @الكارت
+        }
+        layout {
+            sequence: 20
+            slot: contentBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            height: 1
+        }
+    )
+
+    pageItem P34_NOTES (
+        type: textField
+        label {
+            label: ملاحظات
+            alignment: left
+        }
+        layout {
+            sequence: 40
+            slot: contentBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            width: 30
+        }
+    )
+
+    pageItem P34_PRICE (
+        type: displayOnly
+        label {
+            label: السعر
+            alignment: left
+        }
+        settings {
+            sendOnPageSubmit: false
+        }
+        layout {
+            sequence: 50
+            slot: contentBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    pageItem P34_VEHICLE_ID (
+        type: popupLov
+        label {
+            label: "اختار السيارة "
+            alignment: left
+        }
+        lov {
+            type: sharedComponent
+            lov: @السيارة
+        }
+        layout {
+            sequence: 10
+            slot: contentBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            width: 30
+        }
+    )
+
+    pageItem P34_WASH_TYPE (
+        type: radioGroup
+        label {
+            label: نوع الغسيل
+            alignment: left
+        }
+        settings {
+            noOfCols: 3
+        }
+        lov {
+            type: staticValues
+            staticValues: STATIC:خارجي;EXTERIOR,داخلي;INTERIOR,شامل;FULL
+            displayExtraValues: false
+            displayNullValue: false
+        }
+        layout {
+            sequence: 30
+            slot: contentBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: [
+                #DEFAULT#
+                t-Form-fieldContainer--radioButtonGroup
+            ]
+        }
+    )
+
+    button cancel (
+        buttonName: cancel
+        label: الغاء
+        layout {
+            sequence: 20
+            region: @new
+            slot: close
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-times
+        }
+        behavior {
+            action: definedByDynamicAction
+        }
+    )
+
+    button save-wash (
+        buttonName: save_wash
+        label: حفظ الطلب
+        layout {
+            sequence: 10
+            region: @new
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    dynamicAction close-dialog (
+        name: close_dialog
+        execution {
+            sequence: 30
+        }
+        when {
+            event: click
+            selectionType: button
+            button: @cancel
+        }
+
+        action native-dialog-close (
+            action: closeDialog
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+    dynamicAction new (
+        name: New
+        execution {
+            sequence: 10
+        }
+        when {
+            selectionType: items
+            items: [
+                P34_VEHICLE_ID
+                P34_WASH_TYPE
+            ]
+        }
+
+        action get-price (
+            name: get_price
+            action: executeServerSideCode
+            settings {
+                plsqlCode:
+                    ```plsql
+                    begin
+                      select p.price into :P34_PRICE
+                        from vehicles v
+                        join car_wash_prices p on p.vehicle_size = v.vehicle_size
+                                              and p.wash_type = :P34_WASH_TYPE
+                       where v.vehicle_id = :P34_VEHICLE_ID;
+                    exception
+                      when no_data_found then :P34_PRICE := null;
+                    end;
+                    ```
+                itemsToSubmit: [
+                    P34_VEHICLE_ID
+                    P34_WASH_TYPE
+                ]
+                itemsToReturn: P34_PRICE
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+    process new (
+        name: New
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                declare
+                  l_queue number;
+                begin
+                  select nvl(max(queue_number), 0) + 1
+                    into l_queue
+                    from car_wash
+                   where trunc(wash_date) = trunc(sysdate);
+                
+                  insert into car_wash (job_card_id, vehicle_id, wash_type, queue_number, notes)
+                  values (:P34_JOB_CARD_ID, :P34_VEHICLE_ID, :P34_WASH_TYPE, l_queue, :P34_NOTES);
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+        }
+        successMessage {
+            successMessage: تم حفظ طلب الغسيل
+        }
+        advanced {
+            executionMappingIdentifier: 14490001433824907149
+        }
+        serverSideCondition {
+            whenButtonPressed: @save-wash
+        }
+    )
+
+)
+

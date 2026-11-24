@@ -1,0 +1,439 @@
+page 9999 (
+    name: Login Page
+    alias: LOGIN
+    appearance {
+        pageTemplate: @/login
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: firstItemOnPage
+        warnOnUnsavedChanges: false
+    }
+    css {
+        inline:
+            ```css
+            /* استبدال المربع البرتقالي باللوجو */
+            .t-Login-logo {
+              background-image: url("#APP_FILES#logo/socrat-logo.svg") !important;
+              background-color: transparent !important;
+              background-size: contain;
+              background-repeat: no-repeat;
+              background-position: center;
+              width: 110px;
+              height: 110px;
+              box-shadow: none !important;
+              border-radius: 0 !important;
+            }
+            .t-Login-logo::before { display: none; } /* إخفاء أيقونة/حروف التطبيق الافتراضية */
+            
+            /* العنوان */
+            .t-Login-title {
+              letter-spacing: 6px;
+              font-weight: 700;
+            }.t-Login-title::after {
+              content: "صيانة السيارات الألمانية";
+              display: block;
+              font-size: 13px;
+              font-weight: 400;
+              letter-spacing: 0;
+              opacity: .7;
+              margin-top: 4px;
+            }
+            /* ===== Login buttons: pill + icon + spin ===== */
+            /* ===== Login buttons: pill + icon + spin ===== */
+            .s-pill.t-Button{
+              position:relative;
+              display:flex !important;
+              align-items:center;
+              justify-content:center;
+              gap:10px;
+              width:100%;
+              margin-inline:auto;
+              border-radius:999px !important;
+              overflow:hidden;
+              transition:width .4s cubic-bezier(.4,0,.2,1), transform .2s ease, box-shadow .2s ease;
+            }
+            .s-pill.t-Button:hover{
+              transform:translateY(-2px);
+              box-shadow:0 8px 20px rgba(245,166,35,.25);
+            }
+            .s-pill .t-Icon{transition:transform .25s ease}
+            .s-pill:hover .t-Icon{transform:scale(1.2) rotate(-10deg)}
+            
+            /* after click: shrink into a circle and spin */
+            .s-pill.is-loading{
+              width:48px !important;
+              min-width:0 !important;
+              padding:0 !important;
+              pointer-events:none;
+              transform:none !important;
+            }
+            .s-pill.is-loading > *{opacity:0}
+            .s-pill.is-loading::after{
+              content:"";
+              position:absolute;
+              inset:9px;
+              border-radius:50%;
+              border:3px solid rgba(255,255,255,.35);
+              border-top-color:#fff;
+              animation:s-pill-spin .7s linear infinite;
+            }
+            .s-pill.t-Button--hot.is-loading::after{
+              border-color:rgba(0,0,0,.2);
+              border-top-color:#1a1a1a;
+            }
+            @keyframes s-pill-spin{to{transform:rotate(360deg)}}
+            
+            ```
+    }
+    security {
+        authentication: public
+    }
+
+    region socrat (
+        name: Socrat
+        title: Socrat
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: contentBody
+        }
+        appearance {
+            template: @/login
+            templateOptions: #DEFAULT#
+        }
+        image {
+            fileUrl: #APP_FILES#icons/app-icon-512.png
+        }
+    )
+
+    pageItem P9999_PASSWORD (
+        type: password
+        label {
+            label: الرقم السري
+            alignment: left
+        }
+        layout {
+            sequence: 20
+            region: @socrat
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/hidden
+            templateOptions: #DEFAULT#
+            icon: fa-key
+            width: 40
+            valuePlaceholder: الرقم السري
+        }
+        validation {
+            maxLength: 100
+        }
+        advanced {
+            customAttributes: autocomplete="current-password"
+        }
+        sessionState {
+            storage: request
+        }
+    )
+
+    pageItem P9999_REMEMBER (
+        type: checkbox
+        label {
+            label: تذكرني لاحقا
+            alignment: left
+        }
+        layout {
+            sequence: 30
+            region: @socrat
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/hidden
+            templateOptions: #DEFAULT#
+        }
+        serverSideCondition {
+            type: expression
+            plsqlExpression: apex_authentication.persistent_cookies_enabled
+        }
+    )
+
+    pageItem P9999_USERNAME (
+        type: textField
+        label {
+            label: أسم المستخدم
+            alignment: left
+        }
+        layout {
+            sequence: 10
+            region: @socrat
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/hidden
+            templateOptions: #DEFAULT#
+            icon: fa-user
+            width: 40
+            valuePlaceholder: أسم المستخدم
+        }
+        validation {
+            maxLength: 100
+        }
+        advanced {
+            customAttributes: autocomplete="username"
+        }
+        sessionState {
+            storage: request
+        }
+    )
+
+    button btn-create-account (
+        buttonName: BTN_CREATE_ACCOUNT
+        label: انشاء حساب جديد
+        layout {
+            sequence: 10
+            region: @socrat
+            slot: next
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            cssClasses: s-pill
+            icon: fa-user-plus
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 15
+            }
+        }
+    )
+
+    button login (
+        buttonName: LOGIN
+        label: تسجيل الدخول
+        layout {
+            sequence: 20
+            region: @socrat
+            slot: next
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            cssClasses: [
+                s-pill
+                s-pill--login
+            ]
+            icon: fa-sign-in
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    dynamicAction new (
+        name: New
+        execution {
+            sequence: 10
+        }
+        when {
+            event: click
+            selectionType: jQuerySelector
+            jquerySelector: #themeToggle
+        }
+
+        action native-javascript-code (
+            action: executeJsCode
+            settings {
+                jsCode: SocratTheme.toggle();
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+    dynamicAction الزراير-تلف (
+        name: الزراير تلف
+        execution {
+            sequence: 20
+        }
+        when {
+            event: click
+            selectionType: jQuerySelector
+            jquerySelector: .s-pill
+        }
+
+        action native-javascript-code (
+            action: executeJsCode
+            settings {
+                jsCode:
+                    ```javascript-browser
+                    var btn = this.triggeringElement;
+                    
+                    // login with empty fields: don't spin, let APEX show the error
+                    if ($(btn).hasClass('s-pill--login') &&
+                        (!$v('P9999_USERNAME') || !$v('P9999_PASSWORD'))) {
+                      return;
+                    }
+                    
+                    btn.classList.add('is-loading');
+                    
+                    // if the page didn't move (e.g. an error), return the button to normal
+                    setTimeout(function () { btn.classList.remove('is-loading'); }, 6000);
+                    ```
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+    process clear-page-s-cache (
+        name: Clear Page(s) Cache
+        type: clearSessionState
+        execution {
+            sequence: 30
+        }
+        advanced {
+            executionMappingIdentifier: 13806797084233734257
+        }
+    )
+
+    process get-username-cookie (
+        name: Get Username Cookie
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                :P9999_USERNAME := apex_authentication.get_login_username_cookie;
+                :P9999_REMEMBER := case when :P9999_USERNAME is not null then 'Y' end;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+        advanced {
+            executionMappingIdentifier: 13806796622552734257
+        }
+    )
+
+    process login (
+        name: Login
+        type: invokeApi
+        invoke {
+            package: APEX_AUTHENTICATION
+            procedureOrFunction: LOGIN
+        }
+        execution {
+            sequence: 20
+        }
+        advanced {
+            executionMappingIdentifier: 13806793422057734254
+        }
+
+        parameter p_password (
+            value {
+                type: item
+                item: P9999_PASSWORD
+            }
+            advanced {
+                displaySequence: 2
+            }
+        )
+
+        parameter p_set_persistent_auth (
+            parameter {
+                dataType: boolean
+                hasDefault: true
+            }
+            value {
+                type: apiDefault
+            }
+            advanced {
+                displaySequence: 3
+            }
+        )
+
+        parameter p_username (
+            value {
+                type: item
+                item: P9999_USERNAME
+            }
+            advanced {
+                displaySequence: 1
+            }
+        )
+
+    )
+
+    process set-username-cookie (
+        name: Set Username Cookie
+        type: invokeApi
+        invoke {
+            package: APEX_AUTHENTICATION
+            procedureOrFunction: SEND_LOGIN_USERNAME_COOKIE
+        }
+        execution {
+            sequence: 10
+        }
+        advanced {
+            executionMappingIdentifier: 13806795294135734256
+        }
+
+        parameter p_consent (
+            parameter {
+                dataType: boolean
+            }
+            value {
+                type: item
+                item: P9999_REMEMBER
+            }
+            advanced {
+                displaySequence: 2
+            }
+        )
+
+        parameter p_username (
+            value {
+                type: expression
+                plsqlExpression: lower( :P9999_USERNAME )
+            }
+            advanced {
+                displaySequence: 1
+            }
+        )
+
+    )
+
+    branch (
+        name: go_to_login
+        execution {
+            sequence: 10
+        }
+        behavior {
+            target: {
+                page: 9999
+            }
+        }
+        serverSideCondition {
+            whenButtonPressed: @btn-create-account
+        }
+    )
+
+)
+

@@ -1,0 +1,12 @@
+lov customers-full-name (
+    name: CUSTOMERS.FULL_NAME
+    source {
+        tableName: CUSTOMERS
+    }
+    columnMapping {
+        return: CUSTOMER_ID
+        display: FULL_NAME
+        defaultSort: FULL_NAME
+    }
+)
+

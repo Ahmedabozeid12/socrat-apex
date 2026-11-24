@@ -1,0 +1,522 @@
+page 28 (
+    name: إنشاء فاتورة
+    alias: إنشاء-فاتورة
+    title: إنشاء فاتورة
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @/modal-dialog
+        templateOptions: #DEFAULT#
+    }
+
+    region new (
+        name: New
+        type: staticContent
+        layout {
+            sequence: 10
+            slot: dialogFooter
+        }
+        appearance {
+            template: @/buttons-container
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region بيانات-الفاتورة (
+        name: بيانات الفاتورة
+        type: staticContent
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    pageItem P28_CAR_WASH_ID (
+        type: selectList
+        label {
+            label: طلب الغسيل
+            alignment: left
+        }
+        lov {
+            type: sharedComponent
+            lov: @غسيل-منفرد
+        }
+        layout {
+            sequence: 30
+            region: @بيانات-الفاتورة
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            height: 1
+        }
+        serverSideCondition {
+            type: item=value
+            item: P28_SOURCE
+            value: WASH
+        }
+    )
+
+    pageItem P28_DISCOUNT_PERCENT (
+        type: numberField
+        label {
+            label: نسبة الخصم %
+            alignment: left
+        }
+        settings {
+            minValue: 0
+            maxValue: 100
+        }
+        layout {
+            sequence: 40
+            region: @بيانات-الفاتورة
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-percent
+            width: 30
+        }
+    )
+
+    pageItem P28_DISC_AMT (
+        type: displayOnly
+        label {
+            label: الخصم
+            alignment: left
+        }
+        settings {
+            sendOnPageSubmit: false
+        }
+        layout {
+            sequence: 80
+            region: @بيانات-الفاتورة
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    pageItem P28_JOB_CARD_ID (
+        type: selectList
+        label {
+            label: الكارت
+            alignment: left
+        }
+        lov {
+            type: sharedComponent
+            lov: @كارت-ملوش-فاتورة-وملغية
+            nullDisplayValue: - اختار الكارت -
+        }
+        layout {
+            sequence: 20
+            region: @بيانات-الفاتورة
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-wrench
+            height: 1
+        }
+        serverSideCondition {
+            type: item=value
+            item: P28_SOURCE
+            value: JOB
+        }
+    )
+
+    pageItem P28_MAX_DISCOUNT (
+        type: displayOnly
+        label {
+            label: أقصى خصم مسموح لك %
+            alignment: left
+        }
+        layout {
+            sequence: 50
+            region: @بيانات-الفاتورة
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-above
+            templateOptions: #DEFAULT#
+        }
+        source {
+            type: expression
+            plsqlExpression: max_discount_percent(:APP_USER)
+        }
+    )
+
+    pageItem P28_NET (
+        type: displayOnly
+        label {
+            label: الصافي
+            alignment: left
+        }
+        settings {
+            sendOnPageSubmit: false
+        }
+        layout {
+            sequence: 100
+            region: @بيانات-الفاتورة
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    pageItem P28_NEW_INVOICE_ID (
+        type: hidden
+        layout {
+            sequence: 60
+            region: @بيانات-الفاتورة
+            slot: regionBody
+        }
+    )
+
+    pageItem P28_SOURCE (
+        type: radioGroup
+        label {
+            label: الفاتورة عن
+            alignment: left
+        }
+        settings {
+            noOfCols: 2
+        }
+        lov {
+            type: staticValues
+            staticValues: STATIC:كارت صيانة;JOB,غسيل منفرد;WASH
+            displayNullValue: false
+        }
+        layout {
+            sequence: 10
+            region: @بيانات-الفاتورة
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: [
+                #DEFAULT#
+                t-Form-fieldContainer--radioButtonGroup
+            ]
+        }
+        validation {
+            valueRequired: true
+        }
+        default {
+            type: static
+            staticValue: JOB
+        }
+    )
+
+    pageItem P28_SUBTOTAL (
+        type: displayOnly
+        label {
+            label: قبل الخصم
+            alignment: left
+        }
+        settings {
+            sendOnPageSubmit: false
+        }
+        layout {
+            sequence: 70
+            region: @بيانات-الفاتورة
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    pageItem P28_TAX (
+        type: displayOnly
+        label {
+            label: الضريبة 14%
+            alignment: left
+        }
+        settings {
+            sendOnPageSubmit: false
+        }
+        layout {
+            sequence: 90
+            region: @بيانات-الفاتورة
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    button cancel (
+        buttonName: CANCEL
+        label: إلغاء
+        layout {
+            sequence: 10
+            region: @new
+            slot: close
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-times
+        }
+        behavior {
+            action: definedByDynamicAction
+        }
+    )
+
+    button create-invoice (
+        buttonName: CREATE_INVOICE
+        label: إنشاء الفاتورة
+        layout {
+            sequence: 20
+            region: @new
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-check
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: insert
+        }
+    )
+
+    dynamicAction cancel-dialog (
+        name: Cancel dialog
+        execution {
+            sequence: 20
+        }
+        when {
+            event: click
+            selectionType: button
+            button: @cancel
+        }
+
+        action native-dialog-close (
+            action: closeDialog
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+    dynamicAction new (
+        name: New
+        execution {
+            sequence: 30
+        }
+        when {
+            selectionType: items
+            items: [
+                P28_JOB_CARD_ID
+                P28_DISCOUNT_PERCENT
+            ]
+        }
+
+        action native-execute-plsql-code (
+            action: executeServerSideCode
+            settings {
+                plsqlCode:
+                    ```plsql
+                    declare
+                      l_sub number;
+                    begin
+                      select nvl((select sum(QUANTITY * UNIT_PRICE) from JOB_CARD_SERVICES
+                                   where job_card_id = :P28_JOB_CARD_ID), 0)
+                           + nvl((select sum(QUANTITY_ISSUED * UNIT_PRICE) from PARTS_ISSUED
+                                   where job_card_id = :P28_JOB_CARD_ID), 0)
+                        into l_sub from dual;
+                    
+                      :P28_SUBTOTAL := to_char(l_sub, 'FM999G999G990D00') || ' ج.م';
+                      :P28_DISC_AMT := to_char(l_sub * nvl(to_number(:P28_DISCOUNT_PERCENT), 0) / 100, 'FM999G999G990D00') || ' ج.م';
+                      :P28_TAX      := to_char(l_sub * (1 - nvl(to_number(:P28_DISCOUNT_PERCENT), 0) / 100) * 0.14, 'FM999G999G990D00') || ' ج.م';
+                      :P28_NET      := to_char(l_sub * (1 - nvl(to_number(:P28_DISCOUNT_PERCENT), 0) / 100) * 1.14, 'FM999G999G990D00') || ' ج.م';
+                    end;
+                    ```
+                itemsToSubmit: [
+                    P28_JOB_CARD_ID
+                    P28_DISCOUNT_PERCENT
+                ]
+                itemsToReturn: [
+                    P28_SUBTOTAL
+                    P28_DISC_AMT
+                    P28_TAX
+                    P28_NET
+                ]
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+    dynamicAction switch-source (
+        name: Switch source
+        execution {
+            sequence: 10
+        }
+        when {
+            selectionType: items
+            items: P28_SOURCE
+        }
+        clientSideCondition {
+            type: item=value
+            item: P28_SOURCE
+            value: JOB
+        }
+
+        action native-hide (
+            action: hide
+            affectedElements {
+                selectionType: items
+                items: P28_JOB_CARD_ID
+            }
+            execution {
+                sequence: 10
+                fireWhenEventResultIs: false
+            }
+        )
+
+        action native-show (
+            action: show
+            affectedElements {
+                selectionType: items
+                items: P28_JOB_CARD_ID
+            }
+            execution {
+                sequence: 10
+            }
+        )
+
+    )
+
+    validation p91-source-job-or-p91-job-card-id-is-not-null (
+        name: :P91_SOURCE <> 'JOB' or :P91_JOB_CARD_ID is not null
+        execution {
+            sequence: 10
+        }
+        validation {
+            plsqlExpression: :P28_SOURCE <> 'JOB' or :P28_JOB_CARD_ID is not null
+        }
+        error {
+            errorMessage: اختار الكارت
+            associatedItem: @P28_JOB_CARD_ID
+        }
+    )
+
+    validation اختار-طلب-الغسيل (
+        name: اختار طلب الغسيل
+        execution {
+            sequence: 20
+        }
+        validation {
+            plsqlExpression: :P28_SOURCE <> 'WASH' or :P28_CAR_WASH_ID is not null
+        }
+        error {
+            errorMessage: اختار طلب الغسيل
+            associatedItem: @P28_CAR_WASH_ID
+        }
+    )
+
+    validation نسبة-الخصم (
+        name: نسبة الخصم
+        execution {
+            sequence: 30
+        }
+        validation {
+            plsqlExpression: nvl(to_number(:P28_DISCOUNT_PERCENT), 0) between 0 and max_discount_percent(:APP_USER)
+        }
+        error {
+            errorMessage: نسبة الخصم أكبر من المسموح لك
+            associatedItem: @P28_DISCOUNT_PERCENT
+        }
+    )
+
+    process new (
+        name: Create invoice
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                declare
+                  l_user users.user_id%type;
+                  l_inv  invoices.invoice_id%type;
+                begin
+                  select user_id into l_user
+                    from users
+                   where upper(username) = upper(:APP_USER);
+                
+                  if :P28_JOB_CARD_ID is not null then
+                    pkg_invoice.create_job_card_invoice(:P28_JOB_CARD_ID, l_user, nvl(:P28_DISCOUNT_PERCENT, 0), l_inv);
+                  elsif :P28_CAR_WASH_ID is not null then
+                    pkg_invoice.create_wash_invoice(:P28_CAR_WASH_ID, l_user, nvl(:P28_DISCOUNT_PERCENT, 0), l_inv);
+                  else
+                    raise_application_error(-20720, 'اختار كارت صيانة أو طلب غسيل');
+                  end if;
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+        }
+        successMessage {
+            successMessage: تم إنشاء الفاتورة
+        }
+        advanced {
+            executionMappingIdentifier: 14455387704843725233
+        }
+        serverSideCondition {
+            whenButtonPressed: @create-invoice
+        }
+    )
+
+    process new_1 (
+        name: Close dialog
+        type: closeDialog
+        execution {
+            sequence: 20
+        }
+        advanced {
+            executionMappingIdentifier: 14455387864770725234
+        }
+        serverSideCondition {
+            whenButtonPressed: @create-invoice
+        }
+    )
+
+)
+

@@ -1,0 +1,1059 @@
+page 21 (
+    name: "كارت صيانة "
+    alias: كارت-صيانة
+    title: كارت صيانة
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @/modal-dialog
+        templateOptions: #DEFAULT#
+    }
+
+    region buttons (
+        name: Buttons
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: dialogFooter
+        }
+        appearance {
+            template: @/buttons-container
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region الخدمات-المطلوبة (
+        name: الخدمات المطلوبة
+        type: interactiveGrid
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select job_card_service_id, job_card_id, service_id, technician_id,
+                       quantity, unit_price, line_status, notes
+                  from job_card_services
+                 where job_card_id = :P21_JOB_CARD_ID
+                ```
+            pageItemsToSubmit: P21_JOB_CARD_ID
+        }
+        layout {
+            sequence: 20
+            slot: contentBody
+        }
+        appearance {
+            template: @/interactive-report
+            templateOptions: [
+                #DEFAULT#
+                t-IRR-region--hideHeader js-addHiddenHeadingRoleDesc
+            ]
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P21_JOB_CARD_ID
+        }
+        edit {
+            enabled: true
+            allowedOperations: update
+        }
+        toolbar {
+            controls: [
+                searchCol
+                resetButton
+                saveButton
+            ]
+        }
+        download {
+            formats: [
+                csv
+                html
+                excel
+                pdf
+            ]
+        }
+        advanced {
+            savedReportMappingIdentifier: 14444586642364764030
+        }
+
+        savedReport primary (
+            visibility: primary
+            view {
+                default: grid
+            }
+            singleRowView {
+                displayedColumns: true
+            }
+
+            displayColumn (
+                column: @JOB_CARD_SERVICE_ID
+                layout {
+                    sequence: 1
+                }
+            )
+
+            displayColumn (
+                column: @JOB_CARD_ID
+                layout {
+                    sequence: 2
+                }
+            )
+
+            displayColumn (
+                column: @SERVICE_ID
+                layout {
+                    sequence: 3
+                }
+            )
+
+            displayColumn (
+                column: @TECHNICIAN_ID
+                layout {
+                    sequence: 4
+                }
+            )
+
+            displayColumn (
+                column: @QUANTITY
+                layout {
+                    sequence: 5
+                }
+            )
+
+            displayColumn (
+                column: @UNIT_PRICE
+                layout {
+                    sequence: 6
+                }
+            )
+
+            displayColumn (
+                column: @LINE_STATUS
+                layout {
+                    sequence: 7
+                }
+            )
+
+            displayColumn (
+                column: @NOTES
+                layout {
+                    sequence: 8
+                }
+            )
+
+            displayColumn (
+                column: @APEX$ROW_ACTION
+                layout {
+                    sequence: 0
+                }
+            )
+
+        )
+
+        column APEX$ROW_ACTION (
+            type: actionsMenu
+            layout {
+                sequence: 20
+            }
+        )
+
+        column APEX$ROW_SELECTOR (
+            type: rowSelector
+            layout {
+                sequence: 10
+            }
+        )
+
+        column JOB_CARD_ID (
+            type: hidden
+            heading {
+                heading: Job Card Id
+            }
+            layout {
+                sequence: 40
+            }
+            source {
+                databaseColumn: JOB_CARD_ID
+                dataType: number
+            }
+            default {
+                type: item
+                item: P21_JOB_CARD_ID
+            }
+            exportPrinting {
+                includeInExportPrint: false
+            }
+        )
+
+        column JOB_CARD_SERVICE_ID (
+            type: hidden
+            heading {
+                heading: Job Card Service Id
+            }
+            layout {
+                sequence: 30
+            }
+            source {
+                databaseColumn: JOB_CARD_SERVICE_ID
+                dataType: number
+                primaryKey: true
+            }
+            exportPrinting {
+                includeInExportPrint: false
+            }
+        )
+
+        column LINE_STATUS (
+            type: selectList
+            heading {
+                heading: الحالة
+            }
+            lov {
+                type: sharedComponent
+                lov: @الحالة
+            }
+            layout {
+                sequence: 90
+            }
+            validation {
+                valueRequired: true
+            }
+            source {
+                databaseColumn: LINE_STATUS
+                dataType: varchar2
+            }
+            default {
+                type: static
+                staticValue: PENDING
+            }
+            columnFilter {
+                performanceImpactingOperators: [
+                    contains
+                    startsWith
+                    caseInsensitive
+                    regexp
+                ]
+                lovType: useLov
+            }
+        )
+
+        column NOTES (
+            type: textField
+            heading {
+                heading: ملاحظات
+            }
+            layout {
+                sequence: 100
+            }
+            validation {
+                maxLength: 500
+            }
+            source {
+                databaseColumn: NOTES
+                dataType: varchar2
+            }
+            columnFilter {
+                performanceImpactingOperators: [
+                    contains
+                    startsWith
+                    caseInsensitive
+                    regexp
+                ]
+                lovType: none
+            }
+            enableUsersTo {
+                sort: false
+            }
+        )
+
+        column QUANTITY (
+            type: numberField
+            heading {
+                heading: الكمية
+                alignment: end
+            }
+            settings {
+                minValue: 1
+            }
+            layout {
+                sequence: 70
+                columnAlignment: end
+            }
+            validation {
+                valueRequired: true
+            }
+            source {
+                databaseColumn: QUANTITY
+                dataType: number
+            }
+            columnFilter {
+                lovType: none
+            }
+        )
+
+        column SERVICE_ID (
+            type: selectList
+            heading {
+                heading: الخدمة
+            }
+            lov {
+                type: sharedComponent
+                lov: @الخدمة
+            }
+            layout {
+                sequence: 50
+            }
+            validation {
+                valueRequired: true
+            }
+            source {
+                databaseColumn: SERVICE_ID
+                dataType: number
+            }
+            columnFilter {
+                performanceImpactingOperators: [
+                    contains
+                    startsWith
+                    caseInsensitive
+                    regexp
+                ]
+                lovType: useLov
+            }
+        )
+
+        column TECHNICIAN_ID (
+            type: selectList
+            heading {
+                heading: اسم الفني
+            }
+            lov {
+                type: sharedComponent
+                lov: @الفني
+            }
+            layout {
+                sequence: 60
+            }
+            source {
+                databaseColumn: TECHNICIAN_ID
+                dataType: number
+            }
+            columnFilter {
+                performanceImpactingOperators: [
+                    contains
+                    startsWith
+                    caseInsensitive
+                    regexp
+                ]
+                lovType: useLov
+            }
+        )
+
+        column UNIT_PRICE (
+            type: numberField
+            heading {
+                heading: السعر
+                alignment: end
+            }
+            layout {
+                sequence: 80
+                columnAlignment: end
+            }
+            validation {
+                valueRequired: true
+            }
+            source {
+                databaseColumn: UNIT_PRICE
+                dataType: number
+            }
+            columnFilter {
+                lovType: none
+            }
+        )
+
+        page {
+            borderWidth: 0.5
+            borderColor: #666666
+        }
+    )
+
+    region كارت-صيانة (
+        name: كارت صيانة
+        type: form
+        source {
+            location: localDatabase
+            tableName: JOB_CARDS
+        }
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+        edit {
+            enabled: true
+            allowedOperations: [
+                add
+                update
+                delete
+            ]
+        }
+    )
+
+    pageItem P21_CLOSE_DATE (
+        type: datePicker
+        label {
+            label: تاريخ الإغلاق
+            alignment: left
+        }
+        layout {
+            sequence: 80
+            region: @كارت-صيانة
+            slot: regionBody
+            alignment: left
+            startNewRow: false
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            formatMask: DD/MM/YYYY
+            width: 32
+        }
+        validation {
+            maxLength: 255
+        }
+        source {
+            formRegion: @كارت-صيانة
+            column: CLOSE_DATE
+            dataType: date
+        }
+    )
+
+    pageItem P21_CREATED_BY_USER_ID (
+        type: hidden
+        layout {
+            sequence: 40
+            region: @كارت-صيانة
+            slot: regionBody
+        }
+        source {
+            formRegion: @كارت-صيانة
+            column: CREATED_BY_USER_ID
+            dataType: number
+        }
+        default {
+            type: sqlQuerySingleValue
+            sqlQuerySingleValue: select user_id from users where upper(username) = upper(:APP_USER)
+        }
+    )
+
+    pageItem P21_CUSTOMER_COMPLAINT (
+        type: textarea
+        label {
+            label: وصف المشكلة
+            alignment: left
+        }
+        layout {
+            sequence: 90
+            region: @كارت-صيانة
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/required-floating
+            templateOptions: #DEFAULT#
+            width: 60
+            height: 4
+        }
+        validation {
+            valueRequired: true
+            maxLength: 1000
+        }
+        source {
+            formRegion: @كارت-صيانة
+            column: CUSTOMER_COMPLAINT
+            dataType: varchar2
+        }
+    )
+
+    pageItem P21_EXPECTED_DELIVERY_DATE (
+        type: datePicker
+        label {
+            label: موعد التسليم
+            alignment: left
+        }
+        layout {
+            sequence: 60
+            region: @كارت-صيانة
+            slot: regionBody
+            alignment: left
+            startNewRow: false
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            formatMask: DD/MM/YYYY
+            width: 32
+        }
+        validation {
+            maxLength: 255
+        }
+        source {
+            formRegion: @كارت-صيانة
+            column: EXPECTED_DELIVERY_DATE
+            dataType: date
+        }
+    )
+
+    pageItem P21_JOB_CARD_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @كارت-صيانة
+            slot: regionBody
+        }
+        source {
+            formRegion: @كارت-صيانة
+            column: JOB_CARD_ID
+            dataType: number
+            primaryKey: true
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P21_NEXT_SERVICE_DATE (
+        type: datePicker
+        label {
+            label: موعد الصيانة القادمة
+            alignment: left
+        }
+        layout {
+            sequence: 70
+            region: @كارت-صيانة
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            formatMask: DD/MM/YYYY
+            width: 32
+        }
+        validation {
+            maxLength: 255
+        }
+        source {
+            formRegion: @كارت-صيانة
+            column: NEXT_SERVICE_DATE
+            dataType: date
+        }
+    )
+
+    pageItem P21_ODOMETER_READING (
+        type: numberField
+        label {
+            label: العداد (كم)
+            alignment: left
+        }
+        layout {
+            sequence: 100
+            region: @كارت-صيانة
+            slot: regionBody
+            alignment: left
+            startNewRow: false
+        }
+        appearance {
+            template: @/required-floating
+            templateOptions: #DEFAULT#
+            width: 32
+        }
+        validation {
+            valueRequired: true
+            maxLength: 255
+        }
+        source {
+            formRegion: @كارت-صيانة
+            column: ODOMETER_READING
+            dataType: number
+        }
+    )
+
+    pageItem P21_OPEN_DATE (
+        type: datePicker
+        label {
+            label: تاريخ الاستلام
+            alignment: left
+        }
+        layout {
+            sequence: 50
+            region: @كارت-صيانة
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/required-floating
+            templateOptions: #DEFAULT#
+            formatMask: DD/MM/YYYY
+            width: 32
+        }
+        validation {
+            valueRequired: true
+            maxLength: 255
+        }
+        source {
+            formRegion: @كارت-صيانة
+            column: OPEN_DATE
+            dataType: date
+        }
+        default {
+            type: static
+            staticValue: SYSDATE
+        }
+    )
+
+    pageItem P21_STATUS_ID (
+        type: selectList
+        label {
+            label: الحالة
+            alignment: left
+        }
+        lov {
+            type: sharedComponent
+            lov: @job-status-status-name
+        }
+        layout {
+            sequence: 30
+            region: @كارت-صيانة
+            slot: regionBody
+            alignment: left
+            startNewRow: false
+        }
+        appearance {
+            template: @/required-floating
+            templateOptions: #DEFAULT#
+        }
+        validation {
+            valueRequired: true
+        }
+        source {
+            formRegion: @كارت-صيانة
+            column: STATUS_ID
+            dataType: number
+        }
+    )
+
+    pageItem P21_VEHICLE_ID (
+        type: selectList
+        label {
+            label: السيارة
+            alignment: left
+        }
+        lov {
+            type: sharedComponent
+            lov: @vehicles-plate-number
+        }
+        layout {
+            sequence: 20
+            region: @كارت-صيانة
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/required-floating
+            templateOptions: #DEFAULT#
+        }
+        validation {
+            valueRequired: true
+        }
+        source {
+            formRegion: @كارت-صيانة
+            column: VEHICLE_ID
+            dataType: number
+        }
+    )
+
+    pageItem P21_WASH_REQUESTED (
+        type: switch
+        label {
+            label: طلب غسيل
+            alignment: left
+        }
+        layout {
+            sequence: 110
+            region: @كارت-صيانة
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/required-floating
+            templateOptions: #DEFAULT#
+        }
+        source {
+            formRegion: @كارت-صيانة
+            column: WASH_REQUESTED
+            dataType: varchar2
+        }
+    )
+
+    button add-service (
+        buttonName: add_service
+        label: +خدمة
+        layout {
+            sequence: 10
+            region: @الخدمات-المطلوبة
+            slot: aboveBox
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-plus
+        }
+        behavior {
+            action: definedByDynamicAction
+            databaseAction: insert
+        }
+    )
+
+    button cancel (
+        buttonName: CANCEL
+        label: الغاء
+        layout {
+            sequence: 10
+            region: @buttons
+            slot: close
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-times
+        }
+        behavior {
+            action: triggerAction
+        }
+
+        triggerAction native-dialog-cancel (
+            action: cancelDialog
+            execution {
+                sequence: 10
+            }
+        )
+
+    )
+
+    button create (
+        buttonName: CREATE
+        label: حفظ
+        layout {
+            sequence: 40
+            region: @buttons
+            slot: next
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-save
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: insert
+        }
+        serverSideCondition {
+            type: itemIsNull
+            item: P21_JOB_CARD_ID
+        }
+    )
+
+    button delete (
+        buttonName: DELETE
+        label: حذف الكارت
+        layout {
+            sequence: 20
+            region: @buttons
+            slot: delete
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--danger
+                t-Button--iconLeft
+            ]
+            cssClasses: s-btn-danger
+            icon: fa-trash-o
+        }
+        behavior {
+            executeValidations: false
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: delete
+            requiresConfirmation: true
+        }
+        confirmation {
+            message: &APP_TEXT$DELETE_MSG!RAW.
+            style: danger
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P21_JOB_CARD_ID
+        }
+    )
+
+    button save (
+        buttonName: SAVE
+        label: حفظ التعديلات
+        layout {
+            sequence: 30
+            region: @buttons
+            slot: next
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-save
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: update
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P21_JOB_CARD_ID
+        }
+    )
+
+    dynamicAction new (
+        name: New
+        execution {
+            sequence: 10
+        }
+        when {
+            selectionType: columns
+            interactiveGrid: @الخدمات-المطلوبة
+            columns: SERVICE_ID
+        }
+
+        action native-set-value (
+            action: setValue
+            settings {
+                type: sqlQuery
+                sqlQuery: select standard_price from services where service_id = :SERVICE_ID
+                itemsToSubmit: SERVICE_ID
+            }
+            affectedElements {
+                selectionType: columns
+                columns: UNIT_PRICE
+            }
+            execution {
+                sequence: 10
+            }
+        )
+
+    )
+
+    dynamicAction new_1 (
+        name: New
+        execution {
+            sequence: 20
+        }
+        when {
+            event: click
+            selectionType: button
+            button: @add-service
+        }
+
+        action native-show (
+            action: executeJsCode
+            settings {
+                jsCode: var $g=$(".a-IG").first(); $g.interactiveGrid("getActions").set("edit",true); $g.interactiveGrid("getViews","grid").model.insertNewRecord();
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+    validation العداد (
+        name: العداد
+        execution {
+            sequence: 20
+        }
+        validation {
+            type: noRowsReturned
+            sqlQuery:
+                ```sql
+                select 1 from job_cards
+                where vehicle_id = :P21_VEHICLE_ID
+                  and odometer_reading > :P21_ODOMETER_READING
+                  and (:P21_JOB_CARD_ID is null or job_card_id < :P21_JOB_CARD_ID)
+                ```
+        }
+        error {
+            errorMessage: قراءة العداد أقل من آخر قراءة مسجلة للسيارة دي
+            associatedItem: @P21_ODOMETER_READING
+        }
+    )
+
+    validation الكارت-الجديد (
+        name: الكارت الجديد
+        execution {
+            sequence: 40
+        }
+        validation {
+            type: noRowsReturned
+            sqlQuery:
+                ```sql
+                select 1 from dual
+                where :P21_JOB_CARD_ID is null
+                  and to_number(:P21_STATUS_ID) <> 1
+                ```
+        }
+        error {
+            errorMessage: الكارت الجديد لازم يبدأ بحالة (جديد)
+            associatedItem: @P21_STATUS_ID
+        }
+    )
+
+    validation كارت-مفتوح (
+        name: كارت مفتوح
+        execution {
+            sequence: 30
+        }
+        validation {
+            type: noRowsReturned
+            sqlQuery:
+                ```sql
+                select 1 from job_cards
+                where vehicle_id = :P21_VEHICLE_ID
+                  and status_id not in (7, 8)
+                  and job_card_id <> nvl(:P21_JOB_CARD_ID, -1)
+                ```
+        }
+        error {
+            errorMessage: السيارة دي عليها كارت مفتوح بالفعل
+            associatedItem: @P21_VEHICLE_ID
+        }
+    )
+
+    validation كارت-مقفول (
+        name: كارت مقفول
+        execution {
+            sequence: 50
+        }
+        validation {
+            type: noRowsReturned
+            sqlQuery:
+                ```sql
+                select 1 from job_cards
+                where job_card_id = :P21_JOB_CARD_ID
+                  and status_id in (7, 8)
+                ```
+        }
+        error {
+            errorMessage: الكارت ده مقفول (تم التسليم أو ملغي) ومينفعش يتعدل
+            associatedItem: @P21_STATUS_ID
+        }
+    )
+
+    validation موعد-التسليم (
+        name: موعد التسليم
+        execution {
+            sequence: 10
+        }
+        validation {
+            type: noRowsReturned
+            sqlQuery:
+                ```sql
+                select 1 from dual
+                where :P21_EXPECTED_DELIVERY_DATE is not null
+                  and trunc(to_date(:P21_EXPECTED_DELIVERY_DATE, 'DD/MM/YYYY')) < trunc(sysdate)
+                ```
+        }
+        error {
+            errorMessage: موعد التسليم لا يمكن أن يكون قبل تاريخ فتح الكارت
+            associatedItem: @P21_EXPECTED_DELIVERY_DATE
+        }
+        serverSideCondition {
+            type: itemIsNull
+            item: P21_JOB_CARD_ID
+        }
+    )
+
+    process close-dialog (
+        name: Close Dialog
+        type: closeDialog
+        execution {
+            sequence: 30
+        }
+        error {
+            errorMessage: لللللل
+        }
+        advanced {
+            executionMappingIdentifier: 14227037945319818925
+        }
+        serverSideCondition {
+            type: requestIsContainedInValue
+            value: CREATE,SAVE,DELETE
+        }
+    )
+
+    process initialize-form-كارت-صيانة (
+        name: Initialize form كارت صيانة
+        type: formInitialization
+        formRegion: @كارت-صيانة
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+        advanced {
+            executionMappingIdentifier: 14227037051016818924
+        }
+    )
+
+    process process-form-كارت-صيانة (
+        name: Process form كارت صيانة
+        type: formAutoRowProcessing
+        formRegion: @كارت-صيانة
+        execution {
+            sequence: 10
+        }
+        error {
+            errorMessage: ئؤيسربيلاي
+        }
+        advanced {
+            executionMappingIdentifier: 14227037439671818924
+        }
+    )
+
+    process الخدمات-المطلوبة-save-interactive-grid-data (
+        name: الخدمات المطلوبة - Save Interactive Grid Data
+        type: interactiveGridAutoRowProcessing
+        editableRegion: @الخدمات-المطلوبة
+        execution {
+            sequence: 20
+        }
+        error {
+            errorMessage: يبريبلارلللل
+        }
+        advanced {
+            executionMappingIdentifier: 14444587770819764041
+        }
+    )
+
+)
+

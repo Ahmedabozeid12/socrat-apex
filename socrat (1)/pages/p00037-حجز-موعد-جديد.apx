@@ -1,0 +1,274 @@
+page 37 (
+    name: حجز موعد جديد
+    alias: حجز-موعد-جديد
+    title: حجز موعد جديد
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    css {
+        inline: "#booking-card{max-width:680px;margin:24px auto;border-radius:16px}"
+    }
+
+    region breadcrumb (
+        name: Breadcrumb
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region new (
+        name: New
+        title: بيانات الحجز
+        type: staticContent
+        layout {
+            sequence: 30
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+            icon: fa-calendar-plus-o
+        }
+    )
+
+    pageItem P37_CUSTOMER_NOTES (
+        type: textarea
+        label {
+            label: وصف المشكله
+            alignment: left
+        }
+        settings {
+            autoHeight: true
+        }
+        layout {
+            sequence: 30
+            region: @new
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            width: 30
+            height: 5
+            valuePlaceholder: مثال: صوت في الفرامل عند الوقوف
+        }
+        validation {
+            maxLength: 500
+        }
+    )
+
+    pageItem P37_SLOT_ID (
+        type: selectList
+        label {
+            label: اختيار الموعد المتاح
+            alignment: left
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT
+                    TO_CHAR(
+                        S.START_AT,
+                        'FMDay DD FMMonth YYYY',
+                        'NLS_DATE_LANGUAGE=ARABIC'
+                    )
+                    || ' - ' ||
+                    TO_CHAR(
+                        S.START_AT,
+                        'HH:MI AM',
+                        'NLS_DATE_LANGUAGE=ENGLISH'
+                    )
+                    || CASE
+                         WHEN TO_CHAR(S.START_AT, 'HH24') < '12'
+                         THEN ' صباحًا'
+                         ELSE ' مساءً'
+                       END AS DISPLAY_VALUE,
+                
+                    S.SLOT_ID AS RETURN_VALUE
+                
+                FROM APPOINTMENT_SLOTS S
+                
+                WHERE S.IS_ACTIVE = 'Y'
+                  AND S.START_AT > SYSDATE
+                  AND (
+                      SELECT COUNT(*)
+                      FROM APPOINTMENTS A
+                      WHERE A.SLOT_ID = S.SLOT_ID
+                        AND A.STATUS IN ('PENDING', 'CONFIRMED')
+                  ) < S.MAX_BOOKINGS
+                
+                ORDER BY S.START_AT;
+                ```
+        }
+        layout {
+            sequence: 20
+            region: @new
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            height: 1
+        }
+    )
+
+    pageItem P37_VEHICLE_ID (
+        type: selectList
+        label {
+            label: اختر سيارتك
+            alignment: left
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT
+                    PLATE_NUMBER || ' - ' || MAKE || ' ' || MODEL AS DISPLAY_VALUE,
+                    VEHICLE_ID AS RETURN_VALUE
+                FROM VEHICLES
+                WHERE CUSTOMER_ID = TO_NUMBER(:G_CUSTOMER_ID)
+                ORDER BY VEHICLE_ID DESC
+                ```
+        }
+        layout {
+            sequence: 10
+            region: @new
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            height: 1
+        }
+    )
+
+    button book (
+        buttonName: BOOK
+        label: تأكيد الحجز
+        layout {
+            sequence: 40
+            region: @new
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            cssClasses: s-pill
+            icon: fa-calendar-check-o
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button الغاء (
+        buttonName: الغاء
+        label: الغاء
+        layout {
+            sequence: 50
+            region: @new
+            slot: delete
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 18
+            }
+        }
+    )
+
+    process new (
+        name: New
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                DECLARE
+                    V_COUNT NUMBER;
+                BEGIN
+                    IF :G_USER_TYPE <> 'CUSTOMER'
+                       OR :G_CUSTOMER_ID IS NULL
+                    THEN
+                        RAISE_APPLICATION_ERROR(-20001, 'Invalid customer session.');
+                    END IF;
+                
+                    SELECT COUNT(*)
+                    INTO V_COUNT
+                    FROM VEHICLES
+                    WHERE VEHICLE_ID = :P37_VEHICLE_ID
+                      AND CUSTOMER_ID = TO_NUMBER(:G_CUSTOMER_ID);
+                
+                    IF V_COUNT = 0 THEN
+                        RAISE_APPLICATION_ERROR(-20002, 'Invalid vehicle selection.');
+                    END IF;
+                
+                    INSERT INTO APPOINTMENTS (
+                        CUSTOMER_ID,
+                        VEHICLE_ID,
+                        SLOT_ID,
+                        CUSTOMER_NOTES,
+                        STATUS,
+                        CREATED_AT
+                    )
+                    VALUES (
+                        TO_NUMBER(:G_CUSTOMER_ID),
+                        :P37_VEHICLE_ID,
+                        :P37_SLOT_ID,
+                        :P37_CUSTOMER_NOTES,
+                        'PENDING',
+                        SYSDATE
+                    );
+                END;
+                ```
+        }
+        execution {
+            sequence: 10
+        }
+        successMessage {
+            successMessage: تم إرسال طلب الحجز بنجاح، في انتظار تأكيد المركز
+        }
+        advanced {
+            executionMappingIdentifier: 14912134204952701711
+        }
+        serverSideCondition {
+            whenButtonPressed: @book
+        }
+    )
+
+)
+

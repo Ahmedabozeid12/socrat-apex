@@ -1,0 +1,344 @@
+page 35 (
+    name: المغسلة
+    alias: المغسلة
+    title: المغسلة
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+
+    region breadcrumb (
+        name: Breadcrumb
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region المغسلة (
+        name: المغسلة
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select w.car_wash_id,
+                       w.queue_number,
+                       to_char(w.wash_date, 'DD/MM/YYYY HH24:MI') as wash_date,
+                       v.plate_number,
+                       v.make || ' ' || v.model as vehicle,
+                       case w.wash_type when 'EXTERIOR' then 'خارجي' when 'INTERIOR' then 'داخلي' else 'شامل' end as wash_type_ar,
+                       to_char(pr.price, 'FM999G990D00') as price,
+                       case w.wash_status when 'WAITING' then 'في الانتظار' when 'IN_PROGRESS' then 'جاري الغسيل'
+                                          when 'COMPLETED' then 'تم' else 'ملغي' end as status_label,
+                       case w.wash_status when 'WAITING' then 'st-wait' when 'IN_PROGRESS' then 'st-prog'
+                                          when 'COMPLETED' then 'st-ready' else 'st-cancel' end as status_class,
+                       case w.wash_status when 'WAITING' then 'بدء' when 'IN_PROGRESS' then 'تم الغسيل' end as next_label,
+                       case when w.wash_status in ('WAITING', 'IN_PROGRESS') then 'إلغاء' end as cancel_label
+                  from car_wash w
+                  join vehicles v on v.vehicle_id = w.vehicle_id
+                  left join car_wash_prices pr on pr.wash_type = w.wash_type and pr.vehicle_size = v.vehicle_size
+                 where (w.wash_status in ('WAITING', 'IN_PROGRESS') or trunc(w.wash_date) = trunc(sysdate))
+                 order by w.wash_date desc, w.queue_number desc
+                ```
+        }
+        layout {
+            sequence: 30
+            slot: body
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--stretch
+                t-Report--staticRowColors
+                t-Report--rowHighlight
+                t-Report--horizontalBorders
+                t-Report--hideNoPagination
+            ]
+        }
+        messages {
+            whenNoDataFound: No data found.
+        }
+
+        column CANCEL_LABEL (
+            reportColumnQueryId: 11
+            derivedColumn: N
+            type: link
+            heading {
+                heading: الغاء
+                alignment: end
+            }
+            layout {
+                sequence: 11
+            }
+            link {
+                target: {
+                    page: 35
+                    items: {
+                        P35_WASH_ID: #CAR_WASH_ID#
+                    }
+                    request: CANCEL
+                }
+                linkText: #CANCEL_LABEL#
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column CAR_WASH_ID (
+            reportColumnQueryId: 1
+            derivedColumn: N
+            type: hidden
+            layout {
+                sequence: 1
+            }
+        )
+
+        column NEXT_LABEL (
+            reportColumnQueryId: 10
+            derivedColumn: N
+            type: link
+            heading {
+                heading: بدء الغسيل
+                alignment: end
+            }
+            layout {
+                sequence: 10
+            }
+            link {
+                target: {
+                    page: 35
+                    items: {
+                        P35_WASH_ID: #CAR_WASH_ID#
+                    }
+                    request: NEXT
+                }
+                linkText: #NEXT_LABEL#
+                linkAttributes: s-btn-success
+            }
+            columnFormatting {
+                cssClasses: fa-play
+                cssStyle: s-btn-success
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column PLATE_NUMBER (
+            reportColumnQueryId: 4
+            derivedColumn: N
+            heading {
+                heading: اللوحة
+                alignment: end
+            }
+            layout {
+                sequence: 4
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column PRICE (
+            reportColumnQueryId: 7
+            derivedColumn: N
+            heading {
+                heading: السعر
+                alignment: end
+            }
+            layout {
+                sequence: 7
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column QUEUE_NUMBER (
+            reportColumnQueryId: 2
+            derivedColumn: N
+            heading {
+                heading: الدور
+                alignment: end
+            }
+            layout {
+                sequence: 2
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column STATUS_CLASS (
+            reportColumnQueryId: 9
+            derivedColumn: N
+            type: hidden
+            layout {
+                sequence: 9
+            }
+        )
+
+        column STATUS_LABEL (
+            reportColumnQueryId: 8
+            derivedColumn: N
+            heading {
+                heading: الحالة
+                alignment: end
+            }
+            layout {
+                sequence: 8
+            }
+            columnFormatting {
+                htmlExpression: <span class="st-badge#STATUS_CLASS#">#STATUS_LABEL#</span>
+            }
+            sorting {
+                sortable: false
+            }
+            security {
+                escapeSpecialChars: false
+            }
+        )
+
+        column VEHICLE (
+            reportColumnQueryId: 5
+            derivedColumn: N
+            heading {
+                heading: السيارة
+                alignment: end
+            }
+            layout {
+                sequence: 5
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column WASH_DATE (
+            reportColumnQueryId: 3
+            derivedColumn: N
+            heading {
+                heading: الوقت
+                alignment: end
+            }
+            layout {
+                sequence: 3
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column WASH_TYPE_AR (
+            reportColumnQueryId: 6
+            derivedColumn: N
+            heading {
+                heading: النوع
+                alignment: end
+            }
+            layout {
+                sequence: 6
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+    )
+
+    pageItem P35_WASH_ID (
+        type: hidden
+        layout {
+            sequence: 20
+            slot: body
+        }
+    )
+
+    button create (
+        buttonName: create
+        label: طلب غسل جديد
+        layout {
+            sequence: 10
+            region: @breadcrumb
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-plus
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 34
+                clearCache: 34
+            }
+        }
+    )
+
+    process new (
+        name: New
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                begin
+                  if :REQUEST = 'NEXT' then
+                    update car_wash
+                       set wash_status = case wash_status
+                                           when 'WAITING' then 'IN_PROGRESS'
+                                           when 'IN_PROGRESS' then 'COMPLETED'
+                                         end
+                     where car_wash_id = :P35_WASH_ID
+                       and wash_status in ('WAITING', 'IN_PROGRESS');
+                  elsif :REQUEST = 'CANCEL' then
+                    update car_wash
+                       set wash_status = 'CANCELED'
+                     where car_wash_id = :P35_WASH_ID
+                       and wash_status in ('WAITING', 'IN_PROGRESS');
+                  end if;
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+        advanced {
+            executionMappingIdentifier: 14505116693919783005
+        }
+        serverSideCondition {
+            type: requestIsContainedInValue
+            value: NEXT,CANCEL
+        }
+    )
+
+)
+

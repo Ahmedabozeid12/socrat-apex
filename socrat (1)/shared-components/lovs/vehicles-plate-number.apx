@@ -1,0 +1,12 @@
+lov vehicles-plate-number (
+    name: VEHICLES.PLATE_NUMBER
+    source {
+        tableName: VEHICLES
+    }
+    columnMapping {
+        return: VEHICLE_ID
+        display: PLATE_NUMBER
+        defaultSort: PLATE_NUMBER
+    }
+)
+

@@ -1,0 +1,379 @@
+page 25 (
+    name: قائمة الموردين
+    alias: قائمة-الموردين
+    title: قائمة الموردين
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    css {
+        inline:
+            ```css
+            /* ==============================
+               SUPPLIERS PAGE
+               ============================== */
+            
+            #SUPPLIERS_SEARCH,
+            #SUPPLIERS_REPORT {
+                direction: rtl;
+                text-align: right;
+            }
+            
+            /* Region appearance */
+            #SUPPLIERS_SEARCH,
+            #SUPPLIERS_REPORT {
+                border-radius: 12px;
+                overflow: hidden;
+            }
+            
+            /* Region headers */
+            #SUPPLIERS_SEARCH .t-Region-header,
+            #SUPPLIERS_REPORT .t-Region-header {
+                padding: 14px 18px;
+            }
+            
+            /* Region body */
+            #SUPPLIERS_SEARCH .t-Region-body,
+            #SUPPLIERS_REPORT .t-Region-body {
+                padding: 18px;
+            }
+            
+            /* Search input */
+            #P20_SEARCH {
+                border-radius: 9px;
+                min-height: 42px;
+            }
+            
+            /* Buttons */
+            #SUPPLIERS_SEARCH .t-Button,
+            .t-Button {
+                border-radius: 9px;
+                font-weight: 600;
+            }
+            
+            /* Report table */
+            #SUPPLIERS_REPORT .t-Report-report {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            
+            /* Table headings */
+            #SUPPLIERS_REPORT .t-Report-report th {
+                text-align: right;
+                padding: 14px 12px;
+                font-weight: 700;
+                white-space: nowrap;
+            }
+            
+            /* Table cells */
+            #SUPPLIERS_REPORT .t-Report-report td {
+                text-align: right;
+                padding: 14px 12px;
+                vertical-align: middle;
+            }
+            
+            /* Hover effect */
+            #SUPPLIERS_REPORT .t-Report-report tbody tr {
+                transition: background 0.2s ease;
+            }
+            
+            /* Supplier action links */
+            #SUPPLIERS_REPORT .t-Report-report a {
+                font-weight: 600;
+                text-decoration: none;
+            }
+            
+            /* Form */
+            #P21_SUPPLIER_NAME,
+            #P21_PHONE,
+            #P21_TAX_NUMBER,
+            #P21_ADDRESS {
+                border-radius: 9px;
+            }
+            
+            /* Dialog */
+            .ui-dialog {
+                border-radius: 14px;
+                overflow: hidden;
+            }
+            #suppliers-search .t-Region-body .row{align-items:center}
+            #suppliers-search .t-Button{width:100%;height:48px;justify-content:center;white-space:nowrap}
+            ```
+    }
+
+    region breadcrumb (
+        name: Breadcrumb
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region البحث (
+        name: البحث
+        type: staticContent
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region قائمة-الموردين (
+        name: قائمة الموردين
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT
+                    SUPPLIER_ID,
+                    SUPPLIER_NAME,
+                    PHONE,
+                    TAX_NUMBER,
+                    ADDRESS
+                FROM SUPPLIERS
+                WHERE
+                    :P25_SEARCH IS NULL
+                    OR UPPER(SUPPLIER_NAME)
+                       LIKE '%' || UPPER(TRIM(:P25_SEARCH)) || '%'
+                ORDER BY SUPPLIER_ID DESC
+                ```
+            pageItemsToSubmit: P25_SEARCH
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--noPadding
+                t-Region--scrollBody
+            ]
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--stretch
+                t-Report--staticRowColors
+                t-Report--rowHighlight
+                t-Report--horizontalBorders
+                t-Report--hideNoPagination
+            ]
+        }
+        messages {
+            whenNoDataFound: No data found.
+        }
+
+        column ADDRESS (
+            reportColumnQueryId: 5
+            derivedColumn: N
+            heading {
+                heading: <span class="fa fa-map-marker" aria-hidden="true"></span> العنوان
+                alignment: end
+            }
+            layout {
+                sequence: 5
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column PHONE (
+            reportColumnQueryId: 3
+            derivedColumn: N
+            heading {
+                heading: <span class="fa fa-phone" aria-hidden="true"></span> التليفون
+                alignment: end
+            }
+            layout {
+                sequence: 3
+            }
+            columnFormatting {
+                htmlExpression: <a href="tel:#PHONE#"><span class="fa fa-phone" aria-hidden="true"></span> #PHONE#</a>
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column SUPPLIER_ID (
+            reportColumnQueryId: 1
+            derivedColumn: N
+            type: hidden
+            layout {
+                sequence: 1
+            }
+        )
+
+        column SUPPLIER_NAME (
+            reportColumnQueryId: 2
+            derivedColumn: N
+            type: link
+            heading {
+                heading: اسم <span class="fa fa-truck" aria-hidden="true"></span> اسم المورد
+                alignment: end
+            }
+            layout {
+                sequence: 2
+            }
+            link {
+                target: {
+                    page: 27
+                    items: {
+                        P27_SUPPLIER_ID: #SUPPLIER_ID#
+                    }
+                }
+                linkText: #SUPPLIER_NAME#
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column TAX_NUMBER (
+            reportColumnQueryId: 4
+            derivedColumn: N
+            heading {
+                heading: <span class="fa fa-file-text-o" aria-hidden="true"></span> الرقم الضريبي
+                alignment: end
+            }
+            layout {
+                sequence: 4
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+    )
+
+    pageItem P25_SEARCH (
+        type: textField
+        label {
+            label: بحث باسم المورد أو التليفون
+            alignment: left
+        }
+        settings {
+            submitWhenEnterPressed: true
+        }
+        layout {
+            sequence: 10
+            region: @البحث
+            slot: regionBody
+            alignment: left
+            columnSpan: 8
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            width: 30
+            valuePlaceholder: اسم المورد
+        }
+    )
+
+    button add-supplues (
+        buttonName: add_supplues
+        label: إضافة مورد
+        layout {
+            sequence: 10
+            region: @قائمة-الموردين
+            slot: copy
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            cssClasses: t-Button--hot
+            icon: fa-user-plus
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 27
+                clearCache: 27
+            }
+        }
+    )
+
+    button search (
+        buttonName: search
+        label: "بحث "
+        layout {
+            sequence: 20
+            region: @البحث
+            slot: regionBody
+            columnSpan: 2
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+                t-Button--stretch
+            ]
+            icon: fa-search
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button show-all (
+        buttonName: show_all
+        label: عرض الكل
+        layout {
+            sequence: 30
+            region: @البحث
+            slot: regionBody
+            startNewRow: false
+            columnSpan: 2
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+                t-Button--stretch
+            ]
+            cssClasses: s-btn-outline
+            icon: fa-list
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 25
+                clearCache: 25
+            }
+        }
+    )
+
+)
+

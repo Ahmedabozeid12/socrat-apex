@@ -1,0 +1,18 @@
+lov السيارة (
+    name: السيارة
+    source {
+        type: sqlQuery
+        sqlQuery:
+            ```sql
+            select v.plate_number || ' – ' || v.make || ' ' || v.model || ' (' || c.full_name || ')' d, v.vehicle_id r
+              from vehicles v
+              join customers c on c.customer_id = v.customer_id
+             order by v.plate_number
+            ```
+    }
+    columnMapping {
+        return: R
+        display: D
+    }
+)
+

@@ -1,0 +1,20 @@
+lov type (
+    name: TYPE
+    source {
+        location: staticValues
+    }
+
+    entry company (
+        sequence: 2
+        display: شركة
+        return: COMPANY
+    )
+
+    entry individual (
+        sequence: 1
+        display: فردي
+        return: INDIVIDUAL
+    )
+
+)
+

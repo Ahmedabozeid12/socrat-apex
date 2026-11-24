@@ -1,0 +1,95 @@
+theme universal-theme (
+    name: Universal Theme
+    themeNumber: 42
+    baseTheme: ut-26.2
+    style {
+        currentThemeStyle: @socrat-light
+    }
+    javaScript {
+        fileUrls: [
+            #APEX_FILES#libraries/apex/#MIN_DIRECTORY#widget.stickyWidget#MIN#.js?v=#APEX_VERSION#
+            #THEME_FILES#js/theme42#MIN#.js?v=#APEX_VERSION#
+        ]
+    }
+    css {
+        fileUrls: #THEME_FILES#css/Core#MIN#.css?v=#APEX_VERSION#
+    }
+    componentDefaults {
+        page: @/standard
+        navigationBarList: @/navigation-bar
+        navigationMenuListPosition: side
+        navigationMenuListTop: @/top-navigation-menu
+        navigationMenuListSide: @/side-navigation-menu
+        loginPage: @/login
+        errorPage: @/login
+        printerFriendlyPage: @/standard
+        breadcrumb: @/breadcrumb
+        button: @/text
+        defaultLabel: @/optional-floating
+        optionalLabel: @/optional-floating
+        requiredLabel: @/required-floating
+        list: @/links-list
+        region: @/standard
+        classicReport: @/standard
+    }
+    regionDefaults {
+        breadcrumbs: @/title-bar
+        charts: @/standard
+        forms: @/standard
+        lists: @/standard
+        reports: @/standard
+        wizards: @/standard
+        interactiveReports: @/interactive-report
+    }
+    dialogDefaults {
+        dialogContentRegion: @/blank-with-attributes
+        dialogButtonRegion: @/buttons-container
+        dialogPage: @/modal-dialog
+    }
+    icons {
+        library: fontApex
+    }
+    advanced {
+        filePrefix: #APEX_FILES#themes/theme_42/26.2/
+        identifier: UNIVERSAL_THEME
+    }
+
+    style socrat-dark (
+        name: Socrat Dark
+        themeRollerAttributes {
+            inputParameterFileUrls: #THEME_FILES#less/theme/Vita-Dark.less
+            outputCssFileUrl: #THEME_DB_FILES#16049571241915133298.css
+            jsonConfig: "{\"classes\":[],\"vars\":{\"@g_Accent-BG\":\"#ffa726\",\"@g_Accent-OG\":\"#2b2824\",\"@g_Container-BorderRadius\":\"30px\",\"@g_Header-BG\":\"#ffa726\",\"@g_Header-FG\":\"#941010\",\"@g_Nav_Style\":\"dark\",\"@Head-Height\":\"56px\",\"@g_Button-BorderRadius\":\"4px\",\"@g_Form-BorderRadius\":\"30px\",\"@Nav-Exp\":\"160px\"},\"customCSS\":\"\",\"useCustomLess\":\"N\"}"
+        }
+        advanced {
+            endUserCanPick: true
+        }
+    )
+
+    style socrat-light (
+        name: Socrat Light
+        themeRollerAttributes {
+            inputParameterFileUrls: #THEME_FILES#less/theme/Vita.less
+            outputCssFileUrl: #THEME_DB_FILES#16050875095225595125.css
+            jsonConfig: "{\"classes\":[],\"vars\":{\"@g_Accent-BG\":\"#f5a623\",\"@g_Accent-OG\":\"#f5a623\",\"@g_Container-BorderRadius\":\"8px\",\"@g_Header-BG\":\"#ffffff\",\"@g_Header-FG\":\"#000000\",\"@g_Body-BG\":\"#ffffff\",\"@g_Body-Text\":\"#000000\",\"@l_Left-Col-BG\":\"#c6b97d\",\"@l_Left-Col-Text\":\"#ffffff\",\"@g_Region-BG\":\"#ffffff\",\"@g_Region-FG\":\"#262626\",\"@g_Region-Header-BG\":\"#ffffff\",\"@g_Region-Header-FG\":\"#171717\",\"@g_Nav_Style\":\"light\",\"@g_Nav-BG\":\"#e49c1f\",\"@g_Nav-FG\":\"#ffffff\",\"@g_Focus\":\"#80b7f5\",\"@g_Actions-Col-BG\":\"#ffffff\",\"@g_Actions-Col-Text\":\"#ffffff\",\"@g_Nav-Active-BG\":\"#575932\",\"@g_Nav-Active-FG\":\"#ffffff\",\"@g_Nav-Icon\":\"#1a1811\",\"@g_Nav-Icon-Active\":\"#ffffff\",\"@g_Nav-Badge-BG\":\"#e5484d\",\"@g_Nav-Badge-FG\":\"#ffffff\",\"@g_NavBarMenu-BG\":\"#81a01c\",\"@g_NavBarMenu-FG\":\"#262626\",\"@g_NavBarMenu-Active-BG\":\"#f1f5f9\",\"@g_NavBarMenu-Active-FG\":\"#ffffff\",\"@g_Primary-BG\":\"#2878d0\",\"@g_Primary-FG\":\"#0b223a\",\"@g_Disabled-BG\":\"#64748b\",\"@g_Disabled-FG\":\"#ffffff\",\"@g_Success-BG\":\"#16a36a\",\"@g_Success-FG\":\"#ffffff\",\"@g_Info-BG\":\"#0ea5e9\",\"@g_Info-FG\":\"#ffffff\",\"@g_Warning-BG\":\"#f59e0b\",\"@g_Warning-FG\":\"#000000\",\"@g_Danger-BG\":\"#e5484d\",\"@g_Danger-FG\":\"#ffffff\",\"@g_Color-Palette-1\":\"#f5a623\",\"@g_Color-Palette-1-FG\":\"#ffffff\",\"@g_Color-Palette-2\":\"#2878d0\",\"@g_Color-Palette-2-FG\":\"#e4f9fd\",\"@g_Color-Palette-3\":\"#0ea5e9\",\"@g_Color-Palette-3-FG\":\"#f0fcfb\",\"@g_Color-Palette-4\":\"#16a36a\",\"@g_Color-Palette-4-FG\":\"#f0faf6\",\"@g_Color-Palette-5\":\"#f59e0b\",\"@g_Color-Palette-5-FG\":\"#ffffff\",\"@g_Color-Palette-6\":\"#e5484d\",\"@g_Color-Palette-6-FG\":\"#2a2a08\",\"@g_Color-Palette-7\":\"#64748b\",\"@g_Color-Palette-7-FG\":\"#443302\",\"@g_Color-Palette-8\":\"#94a3b8\",\"@g_Color-Palette-8-FG\":\"#ffffff\",\"@g_Color-Palette-10\":\"#f4f7fb\",\"@g_Color-Palette-10-FG\":\"#ffffff\",\"@g_Color-Palette-9\":\"#dce5ef\",\"@g_Color-Palette-9-FG\":\"#ffffff\",\"@g_Color-Palette-11\":\"#ffffff\",\"@g_Color-Palette-11-FG\":\"#ffffff\",\"@g_Color-Palette-12\":\"#dbeafe\",\"@g_Color-Palette-12-FG\":\"#f6f0f8\",\"@g_Color-Palette-13\":\"#dcfce7\",\"@g_Color-Palette-13-FG\":\"#ffffff\",\"@g_Color-Palette-14\":\"#fef3c7\",\"@g_Color-Palette-14-FG\":\"#313a44\",\"@g_Color-Palette-15\":\"#fee2e2\",\"@g_Color-Palette-15-FG\":\"#ffffff\",\"@g_Nav-Accent-BG\":\"#da9d3b\",\"@g_Nav-Accent-FG\":\"#000000\"},\"customCSS\":\"\",\"useCustomLess\":\"N\"}"
+        }
+        advanced {
+            endUserCanPick: true
+            accessibilityTested: true
+        }
+    )
+
+    style vita-dark-copy-1 (
+        name: Vita - Dark (copy_1)
+        themeRollerAttributes {
+            inputParameterFileUrls: #THEME_FILES#less/theme/Vita-Dark.less
+            outputCssFileUrl: #THEME_DB_FILES#13873076037072153605.css
+            jsonConfig: "{\"classes\":[],\"vars\":{\"@g_Accent-BG\":\"#ffa726\",\"@g_Accent-OG\":\"#2b2824\",\"@g_Container-BorderRadius\":\"30px\",\"@g_Header-BG\":\"#ffa726\",\"@g_Header-FG\":\"#941010\",\"@g_Nav_Style\":\"dark\"},\"customCSS\":\"\",\"useCustomLess\":\"N\"}"
+        }
+        advanced {
+            endUserCanPick: true
+        }
+    )
+
+)
+

@@ -1,0 +1,32 @@
+lov tech (
+    name: TECH
+    source {
+        location: staticValues
+    }
+
+    entry body (
+        sequence: 4
+        display: سمكرة
+        return: BODY
+    )
+
+    entry electrical (
+        sequence: 2
+        display: كهرباء
+        return: ELECTRICAL
+    )
+
+    entry mechanical (
+        sequence: 1
+        display: ميكانيكا
+        return: MECHANICAL
+    )
+
+    entry suspension (
+        sequence: 3
+        display: عفشة
+        return: SUSPENSION
+    )
+
+)
+

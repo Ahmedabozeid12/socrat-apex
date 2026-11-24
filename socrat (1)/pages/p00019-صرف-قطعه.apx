@@ -1,0 +1,474 @@
+page 19 (
+    name: صرف قطعه
+    alias: صرف-قطعه
+    title: صرف قطعه
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @/modal-dialog
+        templateOptions: #DEFAULT#
+    }
+
+    region new (
+        name: New
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: contentBody
+        }
+        appearance {
+            template: @/buttons-container
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region بيانات-الصرف (
+        name: بيانات الصرف
+        type: staticContent
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    pageItem P19_AVAILABLE (
+        type: displayOnly
+        label {
+            label: المتاح في المخزن
+            alignment: left
+        }
+        settings {
+            sendOnPageSubmit: false
+        }
+        layout {
+            sequence: 60
+            region: @بيانات-الصرف
+            slot: regionBody
+            alignment: left
+            startNewRow: false
+            columnSpan: 4
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        default {
+            type: expression
+            plsqlExpression: to_char(sysdate,'DD/MM/YYYY')
+        }
+        sessionState {
+            storage: request
+        }
+    )
+
+    pageItem P19_JOB_CARD_ID (
+        type: selectList
+        label {
+            label: رقم الكارت
+            alignment: left
+        }
+        lov {
+            type: sharedComponent
+            lov: @الكروت
+        }
+        layout {
+            sequence: 10
+            region: @بيانات-الصرف
+            slot: regionBody
+            alignment: left
+            columnSpan: 4
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            height: 1
+        }
+    )
+
+    pageItem P19_PART_ID (
+        type: selectList
+        label {
+            label: الصنف
+            alignment: left
+        }
+        lov {
+            type: sharedComponent
+            lov: @الصنف
+        }
+        layout {
+            sequence: 20
+            region: @بيانات-الصرف
+            slot: regionBody
+            alignment: left
+            startNewRow: false
+            columnSpan: 4
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            height: 1
+        }
+    )
+
+    pageItem P19_QUANTITY_ISSUED (
+        type: numberField
+        label {
+            label: الكمية
+            alignment: left
+        }
+        settings {
+            minValue: 1
+        }
+        layout {
+            sequence: 40
+            region: @بيانات-الصرف
+            slot: regionBody
+            alignment: left
+            startNewRow: false
+            columnSpan: 4
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            width: 30
+        }
+        security {
+            encryptSessionState: false
+        }
+    )
+
+    pageItem P19_TOTAL (
+        type: displayOnly
+        label {
+            label: إجمالي الصرف (ج.م)
+            alignment: left
+        }
+        settings {
+            sendOnPageSubmit: false
+        }
+        layout {
+            sequence: 70
+            region: @بيانات-الصرف
+            slot: regionBody
+            alignment: left
+            startNewRow: false
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        sessionState {
+            storage: request
+        }
+    )
+
+    pageItem P19_UNIT_PRICE (
+        type: displayOnly
+        label {
+            label: سعر الوحدة
+            alignment: left
+        }
+        settings {
+            sendOnPageSubmit: false
+        }
+        layout {
+            sequence: 50
+            region: @بيانات-الصرف
+            slot: regionBody
+            alignment: left
+            columnSpan: 4
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        sessionState {
+            storage: request
+        }
+    )
+
+    button cancel (
+        buttonName: CANCEL
+        label: الغاء
+        layout {
+            sequence: 20
+            region: @new
+            slot: close
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            cssClasses: s-btn-danger
+            icon: fa-times
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 17
+                clearCache: 19
+            }
+        }
+    )
+
+    button issue (
+        buttonName: ISSUE
+        label: صرف
+        layout {
+            sequence: 10
+            region: @new
+            slot: close
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-check
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    dynamicAction calc-issue (
+        name: Calc issue
+        execution {
+            sequence: 10
+        }
+        when {
+            selectionType: items
+            items: [
+                P19_PART_ID
+                P19_QUANTITY_ISSUED
+            ]
+        }
+
+        action الأجمالي (
+            name: الأجمالي
+            action: setValue
+            settings {
+                type: sqlQuery
+                sqlQuery: select nvl(:P19_QUANTITY_ISSUED,0) * nvl(selling_price,0) from parts where part_id = :P19_PART_ID
+                itemsToSubmit: [
+                    P19_PART_ID
+                    P19_QUANTITY_ISSUED
+                ]
+            }
+            affectedElements {
+                selectionType: items
+                items: P19_TOTAL
+            }
+            execution {
+                sequence: 30
+            }
+        )
+
+        action السعر (
+            name: السعر
+            action: setValue
+            settings {
+                type: sqlQuery
+                sqlQuery: select selling_price from parts where part_id = :P19_PART_ID
+                itemsToSubmit: P19_PART_ID
+            }
+            affectedElements {
+                selectionType: items
+                items: P19_UNIT_PRICE
+            }
+            execution {
+                sequence: 10
+            }
+        )
+
+        action المتاح (
+            name: المتاح
+            action: setValue
+            settings {
+                type: sqlQuery
+                sqlQuery: select quantity_on_hand from parts where part_id = :P19_PART_ID
+                itemsToSubmit: P19_PART_ID
+            }
+            affectedElements {
+                selectionType: items
+                items: P19_AVAILABLE
+            }
+            execution {
+                sequence: 20
+            }
+        )
+
+    )
+
+    validation اختار-الكارت (
+        name: اختار الكارت
+        execution {
+            sequence: 10
+        }
+        validation {
+            type: itemIsNotNull
+            item: P19_JOB_CARD_ID
+        }
+        error {
+            errorMessage: اختار الكارت
+            associatedItem: @P19_JOB_CARD_ID
+        }
+    )
+
+    validation اكبر-من-المخزون (
+        name: اكبر من المخزون
+        execution {
+            sequence: 40
+        }
+        validation {
+            type: noRowsReturned
+            sqlQuery:
+                ```sql
+                select 1 from parts
+                 where part_id = :P19_PART_ID
+                   and quantity_on_hand < :P19_QUANTITY_ISSUED
+                ```
+        }
+        error {
+            errorMessage: الكمية المطلوبة أكبر من المتاح في المخزن
+            associatedItem: @P19_QUANTITY_ISSUED
+        }
+    )
+
+    validation الصنف (
+        name: الصنف
+        execution {
+            sequence: 20
+        }
+        validation {
+            type: itemIsNotNull
+            item: P19_PART_ID
+        }
+        error {
+            errorMessage:
+                ```
+                اختر الصنف
+                
+                ```
+            associatedItem: @P19_PART_ID
+        }
+    )
+
+    validation الكمية (
+        name: الكمية
+        execution {
+            sequence: 30
+        }
+        validation {
+            plsqlExpression: nvl(to_number(:P19_QUANTITY_ISSUED), 0) >= 1
+        }
+        error {
+            errorMessage: الكمية لازم تكون 1 أو أكتر
+            associatedItem: @P19_QUANTITY_ISSUED
+        }
+    )
+
+    validation كارت-مقفول (
+        name: كارت مقفول
+        execution {
+            sequence: 50
+        }
+        validation {
+            type: noRowsReturned
+            sqlQuery:
+                ```sql
+                select 1 from job_cards
+                 where job_card_id = :P19_JOB_CARD_ID
+                   and status_id in (7, 8)
+                ```
+        }
+        error {
+            errorMessage: الكارت ده مقفول (تم التسليم أو ملغي)
+            associatedItem: @P19_JOB_CARD_ID
+        }
+    )
+
+    process issue-part (
+        name: Issue part
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                declare
+                  l_user_id parts_issued.issued_by_user_id%type;
+                  l_cost    parts.unit_cost%type;
+                  l_price   parts.selling_price%type;
+                begin
+                  begin
+                    select user_id into l_user_id
+                      from users
+                     where upper(username) = upper(:APP_USER);
+                  exception
+                    when no_data_found then
+                      raise_application_error(-20002, 'المستخدم الحالي غير مسجل في جدول المستخدمين');
+                  end;
+                
+                  select unit_cost, selling_price
+                    into l_cost, l_price
+                    from parts
+                   where part_id = :P19_PART_ID;
+                
+                  update parts
+                     set quantity_on_hand = quantity_on_hand - :P19_QUANTITY_ISSUED
+                   where part_id = :P19_PART_ID
+                     and quantity_on_hand >= :P19_QUANTITY_ISSUED;
+                
+                  if sql%rowcount = 0 then
+                    raise_application_error(-20001, 'الكمية المتاحة في المخزن لا تكفي');
+                  end if;
+                
+                  insert into parts_issued
+                    (job_card_id, part_id, issued_by_user_id, quantity_issued, unit_cost, unit_price, issue_date)
+                  values
+                    (:P19_JOB_CARD_ID, :P19_PART_ID, l_user_id, :P19_QUANTITY_ISSUED,
+                     nvl(l_cost, 0), nvl(l_price, 0), sysdate);
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+        }
+        successMessage {
+            successMessage:
+                ```
+                تم صرف القطعه
+                
+                ```
+        }
+        advanced {
+            executionMappingIdentifier: 14246220872746405348
+        }
+        serverSideCondition {
+            whenButtonPressed: @issue
+        }
+    )
+
+    branch (
+        execution {
+            sequence: 10
+        }
+        behavior {
+            target: {
+                page: 17
+                clearCache: 19
+            }
+        }
+        serverSideCondition {
+            whenButtonPressed: @issue
+        }
+    )
+
+)
+

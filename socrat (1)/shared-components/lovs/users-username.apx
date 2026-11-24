@@ -1,0 +1,12 @@
+lov users-username (
+    name: USERS.USERNAME
+    source {
+        tableName: USERS
+    }
+    columnMapping {
+        return: USER_ID
+        display: USERNAME
+        defaultSort: USERNAME
+    }
+)
+

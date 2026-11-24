@@ -1,0 +1,21 @@
+lov كارت-ملوش-فاتورة-وملغية (
+    name: كارت ملوش فاتورة وملغية
+    source {
+        type: sqlQuery
+        sqlQuery:
+            ```sql
+            select '#' || c.job_card_id || ' – ' || v.make || ' ' || v.model || ' (' || v.plate_number || ')' d,
+                   c.job_card_id r
+              from job_cards c
+              join vehicles v on v.vehicle_id = c.vehicle_id
+             where c.status_id <> 8
+               and not exists (select 1 from invoices i where i.job_card_id = c.job_card_id)
+             order by c.job_card_id desc
+            ```
+    }
+    columnMapping {
+        return: R
+        display: D
+    }
+)
+

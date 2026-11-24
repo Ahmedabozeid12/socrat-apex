@@ -1,0 +1,461 @@
+page 14 (
+    name: اضافة الفنييين
+    alias: اضافة-الفنييين
+    title: اضافة الفنييين
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @/modal-dialog
+        templateOptions: #DEFAULT#
+    }
+
+    region buttons (
+        name: Buttons
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: dialogFooter
+        }
+        appearance {
+            template: @/buttons-container
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region اضافة-الفنييين (
+        name: اضافة الفنييين
+        type: form
+        source {
+            location: localDatabase
+            tableName: TECHNICIANS
+        }
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+        edit {
+            enabled: true
+            allowedOperations: [
+                add
+                update
+                delete
+            ]
+        }
+    )
+
+    pageItem P14_FULL_NAME (
+        type: textField
+        label {
+            label: الاسم
+            alignment: left
+        }
+        layout {
+            sequence: 20
+            region: @اضافة-الفنييين
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-user
+            width: 60
+        }
+        validation {
+            valueRequired: true
+            maxLength: 1000
+        }
+        source {
+            formRegion: @اضافة-الفنييين
+            column: FULL_NAME
+            dataType: varchar2
+        }
+    )
+
+    pageItem P14_IS_ACTIVE (
+        type: switch
+        label {
+            label: الحالة
+            alignment: left
+        }
+        layout {
+            sequence: 50
+            region: @اضافة-الفنييين
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        source {
+            formRegion: @اضافة-الفنييين
+            column: IS_ACTIVE
+            dataType: varchar2
+        }
+    )
+
+    pageItem P14_PHONE (
+        type: textField
+        label {
+            label: رقم المحمول
+            alignment: left
+        }
+        settings {
+            subtype: phone
+        }
+        layout {
+            sequence: 40
+            region: @اضافة-الفنييين
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-phone
+            width: 32
+        }
+        validation {
+            valueRequired: true
+            maxLength: 11
+        }
+        source {
+            formRegion: @اضافة-الفنييين
+            column: PHONE
+            dataType: varchar2
+        }
+    )
+
+    pageItem P14_SPECIALTY (
+        type: selectList
+        label {
+            label: التخصص
+            alignment: left
+        }
+        lov {
+            type: sharedComponent
+            lov: @tech
+        }
+        layout {
+            sequence: 30
+            region: @اضافة-الفنييين
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            height: 1
+        }
+        source {
+            formRegion: @اضافة-الفنييين
+            column: SPECIALTY
+            dataType: varchar2
+        }
+    )
+
+    pageItem P14_TECHNICIAN_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @اضافة-الفنييين
+            slot: regionBody
+        }
+        source {
+            formRegion: @اضافة-الفنييين
+            column: TECHNICIAN_ID
+            dataType: number
+            primaryKey: true
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    button cancel (
+        buttonName: CANCEL
+        label: الغاء
+        layout {
+            sequence: 10
+            region: @buttons
+            slot: close
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-times
+        }
+        behavior {
+            action: triggerAction
+        }
+
+        triggerAction native-dialog-cancel (
+            action: cancelDialog
+            execution {
+                sequence: 10
+            }
+        )
+
+    )
+
+    button create (
+        buttonName: CREATE
+        label: إضافة الفني
+        layout {
+            sequence: 40
+            region: @buttons
+            slot: next
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-check
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: insert
+        }
+        serverSideCondition {
+            type: itemIsNull
+            item: P14_TECHNICIAN_ID
+        }
+    )
+
+    button delete (
+        buttonName: DELETE
+        label: حذف
+        layout {
+            sequence: 20
+            region: @buttons
+            slot: delete
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-times
+        }
+        behavior {
+            executeValidations: false
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: delete
+            requiresConfirmation: true
+        }
+        confirmation {
+            message: &APP_TEXT$DELETE_MSG!RAW.
+            style: danger
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P14_TECHNICIAN_ID
+        }
+    )
+
+    button save (
+        buttonName: SAVE
+        label: حفظ
+        layout {
+            sequence: 30
+            region: @buttons
+            slot: next
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-save
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: update
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P14_TECHNICIAN_ID
+        }
+    )
+
+    validation اختيار-التخصص (
+        name: اختيار التخصص
+        execution {
+            sequence: 20
+        }
+        validation {
+            type: itemIsNotNull
+            item: P14_SPECIALTY
+        }
+        error {
+            errorMessage: اختار التخصص
+            associatedItem: @P14_SPECIALTY
+        }
+    )
+
+    validation اسم-الفني (
+        name: اسم الفني
+        execution {
+            sequence: 10
+        }
+        validation {
+            type: itemIsNotNull
+            item: P14_FULL_NAME
+        }
+        error {
+            errorMessage: اكتب اسم الفني
+            associatedItem: @P14_FULL_NAME
+        }
+    )
+
+    validation التحقق-من-رقم-التليفون (
+        name: التحقق من رقم التليفون
+        execution {
+            sequence: 30
+        }
+        validation {
+            type: itemMatchesRegexp
+            item: P14_PHONE
+            regexp: "^01[0125][0-9]{8}$"
+        }
+        error {
+            errorMessage: رقم الهاتف لازم يكون 11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015
+            associatedItem: @P14_PHONE
+        }
+    )
+
+    validation تكرار-الاسم (
+        name: تكرار الاسم
+        execution {
+            sequence: 60
+        }
+        validation {
+            type: noRowsReturned
+            sqlQuery:
+                ```sql
+                select 1 from technicians
+                where upper(trim(full_name)) = upper(trim(:P31_FULL_NAME))
+                  and technician_id <> nvl(:P31_TECHNICIAN_ID, -1)
+                ```
+        }
+        error {
+            errorMessage: الفني ده مسجل بالفعل
+            associatedItem: @P14_FULL_NAME
+        }
+    )
+
+    validation تكرار-الهاتف (
+        name: تكرار الهاتف
+        execution {
+            sequence: 40
+        }
+        validation {
+            type: noRowsReturned
+            sqlQuery:
+                ```sql
+                select 1 from technicians
+                where phone = :P14_PHONE
+                  and technician_id <> nvl(:P14_TECHNICIAN_ID, -1)
+                ```
+        }
+        error {
+            errorMessage: رقم الهاتف ده مسجل لفني تاني
+            associatedItem: @P14_PHONE
+        }
+    )
+
+    validation صبغة-الاسم (
+        name: صبغة الاسم
+        execution {
+            sequence: 50
+        }
+        validation {
+            type: itemMatchesRegexp
+            item: P14_FULL_NAME
+            regexp: "^[^0-9]{3,}$"
+        }
+        error {
+            errorMessage: الاسم لازم يكون 3 حروف على الأقل ومن غير أرقام
+            associatedItem: @P14_FULL_NAME
+        }
+    )
+
+    validation منع-وقف-الفني (
+        name: منع وقف الفني
+        execution {
+            sequence: 70
+        }
+        validation {
+            type: noRowsReturned
+            sqlQuery:
+                ```sql
+                select 1
+                from job_card_services s
+                join job_cards c on c.job_card_id = s.job_card_id
+                where s.technician_id = :P31_TECHNICIAN_ID
+                  and s.line_status = 'PENDING'
+                  and c.status_id not in (7, 8)
+                  and :P31_IS_ACTIVE = 'N'
+                ```
+        }
+        error {
+            errorMessage: مينفعش توقف الفني ده، عنده شغل لسه مخلصش على كروت مفتوحة
+            associatedItem: @P14_IS_ACTIVE
+        }
+    )
+
+    process close-dialog (
+        name: Close Dialog
+        type: closeDialog
+        execution {
+            sequence: 50
+        }
+        advanced {
+            executionMappingIdentifier: 14241175194075247257
+        }
+        serverSideCondition {
+            type: requestIsContainedInValue
+            value: CREATE,SAVE,DELETE
+        }
+    )
+
+    process initialize-form-اضافة-الفنييين (
+        name: Initialize form اضافة الفنييين
+        type: formInitialization
+        formRegion: @اضافة-الفنييين
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+        advanced {
+            executionMappingIdentifier: 14241174391728247256
+        }
+    )
+
+    process process-form-اضافة-الفنييين (
+        name: Process form اضافة الفنييين
+        type: formAutoRowProcessing
+        formRegion: @اضافة-الفنييين
+        execution {
+            sequence: 10
+        }
+        advanced {
+            executionMappingIdentifier: 14241174735631247256
+        }
+    )
+
+)
+

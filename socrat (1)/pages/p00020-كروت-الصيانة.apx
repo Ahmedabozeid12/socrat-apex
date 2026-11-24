@@ -1,0 +1,493 @@
+page 20 (
+    name: كروت الصيانة
+    alias: كروت-الصيانة
+    title: كروت الصيانة
+    appearance {
+        pageTemplate: @/left-side-column
+        templateOptions: #DEFAULT#
+    }
+    css {
+        inline:
+            ```css
+            .st-badge{display:inline-block;padding:2px 12px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+            .st-new{background:rgba(111,183,240,.16);color:#6FB7F0}
+            .st-wait{background:rgba(255,167,38,.16);color:#FFA726}
+            .st-prog{background:rgba(195,155,255,.16);color:#C39BFF}
+            .st-ready{background:rgba(74,222,159,.16);color:#4ADE9F}
+            .st-done{background:rgba(170,176,188,.16);color:#AAB0BC}
+            .st-cancel{background:rgba(170,176,188,.10);color:#8E94A1;text-decoration:line-through}
+            .st-late{background:rgba(255,122,138,.16);color:#FF7A8A}
+            .late-date{color:#FF7A8A;font-weight:600}
+            ```
+    }
+
+    region breadcrumb (
+        name: Breadcrumb
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region button-bar (
+        name: Button Bar
+        type: staticContent
+        source {
+            htmlCode: <div id="active_facets"></div>
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/buttons-container
+            templateOptions: [
+                #DEFAULT#
+                t-ButtonRegion--noPadding
+                t-ButtonRegion--noUI
+            ]
+        }
+    )
+
+    region search (
+        name: بحث
+        title: بحث
+        type: facetedSearch
+        source {
+            filteredRegion: @search-results
+        }
+        layout {
+            sequence: 10
+            slot: leftColumn
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: [
+                #DEFAULT#
+                t-Form--labelsAbove
+            ]
+        }
+        settings {
+            compactNosThreshold: 10000
+            showCurrentFacets: selector
+            currentFacetsSelector: #active_facets
+            displayChartForTopNValues: 10
+        }
+
+        facet P20_IS_LATE (
+            type: checkboxGroup
+            label {
+                label: المتأخر
+            }
+            lov {
+                type: staticValues
+                staticValues: STATIC:متأخر;Y
+            }
+            layout {
+                sequence: 80
+            }
+            listEntries {
+                maxDisplayedEntries: 7
+            }
+            source {
+                databaseColumn: IS_LATE
+            }
+        )
+
+        facet P20_SEARCH (
+            type: search
+            label {
+                label: "  رقم الكارت أو العميل او اللوحة"
+            }
+            layout {
+                sequence: 10
+            }
+            appearance {
+                valuePlaceholder: ابحث برقم الكارت أو العميل أو اللوحة
+            }
+            source {
+                dbColumns: JOB_CARD_ID,CUSTOMER_NAME,PLATE_NUMBER,TECHNICIANS
+            }
+        )
+
+        facet P20_STATUS_NAME (
+            type: checkboxGroup
+            label {
+                label: الحالة
+            }
+            lov {
+                type: distinctValues
+            }
+            layout {
+                sequence: 60
+            }
+            listEntries {
+                maxDisplayedEntries: 7
+            }
+            source {
+                databaseColumn: STATUS_LABEL
+            }
+        )
+
+        facet P20_TECHINICALS (
+            type: checkboxGroup
+            label {
+                label: الفني
+            }
+            lov {
+                type: sqlQuery
+                sqlQuery:
+                    ```sql
+                    select full_name d, to_char(technician_id) r
+                      from technicians
+                     order by full_name
+                    ```
+            }
+            layout {
+                sequence: 70
+            }
+            listEntries {
+                maxDisplayedEntries: 7
+            }
+            source {
+                databaseColumn: TECH_IDS
+            }
+        )
+
+        facet P20_TECHNICIANS (
+            type: search
+            label {
+                label: الفني
+            }
+            layout {
+                sequence: 50
+            }
+            source {
+                dbColumns: TECHNICIANS
+            }
+        )
+
+    )
+
+    region search-results (
+        name: Search Results
+        title: الكروت
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select c.job_card_id,
+                       cu.full_name                          as customer_name,
+                       v.make || ' ' || v.model              as vehicle,
+                       v.plate_number,
+                       (select listagg(t.full_name, '، ') within group (order by t.full_name)
+                          from (select distinct s.job_card_id, t2.full_name
+                                  from job_card_services s
+                                  join technicians t2 on t2.technician_id = s.technician_id) t
+                         where t.job_card_id = c.job_card_id) as technicians,
+                       (select listagg(distinct s.technician_id, ':')
+                                 within group (order by s.technician_id)
+                          from job_card_services s
+                         where s.job_card_id = c.job_card_id
+                           and s.technician_id is not null)   as tech_ids,
+                       c.status_id,
+                       case st.status_name
+                         when 'NEW'              then 'جديد'
+                         when 'UNDER_INSPECTION' then 'تحت الفحص'
+                         when 'WAITING_APPROVAL' then 'بانتظار الموافقة'
+                         when 'IN_PROGRESS'      then 'قيد التنفيذ'
+                         when 'IN_WASH'          then 'في المغسلة'
+                         when 'READY'            then 'جاهز'
+                         when 'DELIVERED'        then 'تم التسليم'
+                         when 'CANCELED'         then 'ملغي'
+                       end                                   as status_label,
+                       to_char(c.expected_delivery_date, 'DD/MM/YYYY')
+                         || case when c.expected_delivery_date < trunc(sysdate)
+                                  and c.status_id not in (7, 8)
+                                 then ' · متأخر '
+                                      || (trunc(sysdate) - trunc(c.expected_delivery_date)) || ' يوم'
+                            end                              as expected_delivery_date,
+                       case when c.expected_delivery_date < trunc(sysdate)
+                             and c.status_id not in (7, 8) then 'Y' else 'N' end as is_late,
+                       case
+                         when c.status_id = 1       then 'st-new'
+                         when c.status_id in (2, 3) then 'st-wait'
+                         when c.status_id in (4, 5) then 'st-prog'
+                         when c.status_id = 6       then 'st-ready'
+                         when c.status_id = 7       then 'st-done'
+                         else 'st-cancel'
+                       end                                   as status_class,
+                       case when c.expected_delivery_date < trunc(sysdate) and c.status_id not in (7, 8)
+                            then 'late-date' end             as date_class
+                  from job_cards c
+                  join vehicles   v  on v.vehicle_id   = c.vehicle_id
+                  join customers  cu on cu.customer_id = v.customer_id
+                  join job_status st on st.status_id   = c.status_id
+                 order by c.job_card_id desc
+                ```
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--stretch
+                t-Report--staticRowColors
+                t-Report--rowHighlight
+                t-Report--horizontalBorders
+                t-Report--hideNoPagination
+            ]
+        }
+        performance {
+            maxRowsToProcess: 100000
+        }
+        messages {
+            whenNoDataFound: مفيش كروت مطابقة.
+        }
+
+        column CUSTOMER_NAME (
+            reportColumnQueryId: 2
+            derivedColumn: N
+            heading {
+                heading: العميل
+                alignment: end
+            }
+            layout {
+                sequence: 2
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column DATE_CLASS (
+            reportColumnQueryId: 12
+            derivedColumn: N
+            type: hidden
+            layout {
+                sequence: 39
+            }
+        )
+
+        column EXPECTED_DELIVERY_DATE (
+            reportColumnQueryId: 9
+            derivedColumn: N
+            heading {
+                heading: موعد التسليم
+                alignment: end
+            }
+            layout {
+                sequence: 8
+            }
+            columnFormatting {
+                htmlExpression: <span class="#DATE_CLASS#">#EXPECTED_DELIVERY_DATE#</span>
+            }
+            sorting {
+                sortable: false
+            }
+            security {
+                escapeSpecialChars: false
+            }
+        )
+
+        column IS_LATE (
+            reportColumnQueryId: 10
+            derivedColumn: N
+            type: hidden
+            layout {
+                sequence: 9
+            }
+        )
+
+        column JOB_CARD_ID (
+            reportColumnQueryId: 1
+            derivedColumn: N
+            type: link
+            heading {
+                heading: رقم الكارت
+                alignment: end
+            }
+            layout {
+                sequence: 1
+            }
+            link {
+                target: {
+                    page: 21
+                    items: {
+                        P21_JOB_CARD_ID: #JOB_CARD_ID#
+                    }
+                    clearCache: 21
+                }
+                linkText: #JOB_CARD_ID#
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column PLATE_NUMBER (
+            reportColumnQueryId: 4
+            derivedColumn: N
+            type: hidden
+            layout {
+                sequence: 4
+            }
+        )
+
+        column STATUS_CLASS (
+            reportColumnQueryId: 11
+            derivedColumn: N
+            type: hidden
+            layout {
+                sequence: 29
+            }
+        )
+
+        column STATUS_ID (
+            reportColumnQueryId: 7
+            derivedColumn: N
+            type: hidden
+            layout {
+                sequence: 6
+            }
+        )
+
+        column STATUS_LABEL (
+            reportColumnQueryId: 8
+            derivedColumn: N
+            heading {
+                heading: الحالة
+                alignment: end
+            }
+            layout {
+                sequence: 19
+            }
+            columnFormatting {
+                htmlExpression: <span class="st-badge #STATUS_CLASS#">#STATUS_LABEL#</span>
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column TECHNICIANS (
+            reportColumnQueryId: 5
+            derivedColumn: N
+            heading {
+                heading: الفني
+                alignment: end
+            }
+            layout {
+                sequence: 5
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column TECH_IDS (
+            reportColumnQueryId: 6
+            derivedColumn: N
+            type: hidden
+            layout {
+                sequence: 49
+            }
+        )
+
+        column VEHICLE (
+            reportColumnQueryId: 3
+            derivedColumn: N
+            heading {
+                heading: السيارة
+                alignment: end
+            }
+            layout {
+                sequence: 3
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+    )
+
+    button new-card (
+        buttonName: NEW_CARD
+        label: كارت جديد
+        layout {
+            sequence: 10
+            region: @breadcrumb
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-plus
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 21
+                clearCache: 21
+            }
+        }
+    )
+
+    button reset (
+        buttonName: RESET
+        label: تحديث
+        layout {
+            sequence: 10
+            region: @button-bar
+            slot: next
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--noUI
+                t-Button--iconLeft
+            ]
+            icon: fa-undo
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 20
+                clearCache: 20
+                action: resetRegions
+            }
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+)
+

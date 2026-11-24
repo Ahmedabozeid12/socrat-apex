@@ -1,0 +1,328 @@
+page 22 (
+    name: سجل السيارة
+    alias: سجل-السيارة
+    title: سجل السيارة
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    css {
+        inline:
+            ```css
+            .st-badge{display:inline-block;padding:2px 12px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+            .st-new{background:rgba(111,183,240,.16);color:#6FB7F0}
+            .st-wait{background:rgba(255,167,38,.16);color:#FFA726}
+            .st-prog{background:rgba(195,155,255,.16);color:#C39BFF}
+            .st-ready{background:rgba(74,222,159,.16);color:#4ADE9F}
+            .st-done{background:rgba(170,176,188,.16);color:#AAB0BC}
+            .st-cancel{background:rgba(170,176,188,.10);color:#8E94A1;text-decoration:line-through}
+            .st-late{background:rgba(255,122,138,.16);color:#FF7A8A}
+            #vh-search .t-Region-body .row{align-items:center}
+            #vh-search .t-Button{width:100%;justify-content:center}
+            ```
+    }
+
+    region breadcrumb (
+        name: Breadcrumb
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region بحث (
+        name: بحث
+        type: staticContent
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region سجل-السيارة (
+        name: سجل السيارة
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select v.vehicle_id,
+                       v.plate_number,
+                       v.make || ' ' || v.model as vehicle_model,
+                       v.color,
+                       case st.status_name
+                         when 'NEW'              then 'جديد'
+                         when 'UNDER_INSPECTION' then 'تحت الفحص'
+                         when 'WAITING_APPROVAL' then 'بانتظار الموافقة'
+                         when 'IN_PROGRESS'      then 'قيد التنفيذ'
+                         when 'IN_WASH'          then 'في المغسلة'
+                         when 'READY'            then 'جاهز'
+                         when 'DELIVERED'        then 'تم التسليم'
+                         when 'CANCELED'         then 'ملغي'
+                       end as status_label,
+                       case
+                         when c.expected_delivery_date < trunc(sysdate) and c.status_id not in (7, 8) then 'st-late'
+                         when c.status_id = 1 then 'st-new'
+                         when c.status_id in (2, 3) then 'st-wait'
+                         when c.status_id in (4, 5) then 'st-prog'
+                         when c.status_id = 6 then 'st-ready'
+                         when c.status_id = 7 then 'st-done'
+                         else 'st-cancel'
+                       end as status_class,
+                       c.customer_complaint,
+                       to_char(c.odometer_reading, 'FM999G999G990') || ' كم' as odometer
+                  from job_cards c
+                  join vehicles   v  on v.vehicle_id = c.vehicle_id
+                  join job_status st on st.status_id = c.status_id
+                 where :P22_PLATE is null
+                    or upper(replace(v.plate_number, ' ', '')) like '%' || upper(replace(:P22_PLATE, ' ', '')) || '%'
+                 order by v.plate_number, c.open_date desc
+                ```
+            pageItemsToSubmit: P22_PLATE
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--noPadding
+                t-Region--removeHeader js-removeLandmark
+                t-Region--scrollBody
+            ]
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--stretch
+                t-Report--staticRowColors
+                t-Report--rowHighlight
+                t-Report--horizontalBorders
+                t-Report--hideNoPagination
+            ]
+        }
+        messages {
+            whenNoDataFound: مفيش زيارات مسجلة للسيارة دي.
+        }
+
+        column COLOR (
+            reportColumnQueryId: 4
+            derivedColumn: N
+            heading {
+                heading: اللون
+                alignment: end
+            }
+            layout {
+                sequence: 4
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column CUSTOMER_COMPLAINT (
+            reportColumnQueryId: 7
+            derivedColumn: N
+            heading {
+                heading: شكوى العميل
+                alignment: end
+            }
+            layout {
+                sequence: 7
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column ODOMETER (
+            reportColumnQueryId: 8
+            derivedColumn: N
+            heading {
+                heading: العداد
+                alignment: end
+            }
+            layout {
+                sequence: 8
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column PLATE_NUMBER (
+            reportColumnQueryId: 2
+            derivedColumn: N
+            heading {
+                heading: رقم اللوحة
+                alignment: end
+            }
+            layout {
+                sequence: 2
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column STATUS_CLASS (
+            reportColumnQueryId: 6
+            derivedColumn: N
+            type: hidden
+            layout {
+                sequence: 6
+            }
+        )
+
+        column STATUS_LABEL (
+            reportColumnQueryId: 5
+            derivedColumn: N
+            heading {
+                heading: الحالة
+                alignment: end
+            }
+            layout {
+                sequence: 5
+            }
+            columnFormatting {
+                htmlExpression: <span class="st-badge #STATUS_CLASS#">#STATUS_LABEL#</span>
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column VEHICLE_ID (
+            reportColumnQueryId: 1
+            derivedColumn: N
+            heading {
+                heading: رقم العربية
+                alignment: end
+            }
+            layout {
+                sequence: 1
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column VEHICLE_MODEL (
+            reportColumnQueryId: 3
+            derivedColumn: N
+            heading {
+                heading: الموديل
+                alignment: end
+            }
+            layout {
+                sequence: 3
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+    )
+
+    pageItem P22_PLATE (
+        type: textField
+        label {
+            label: بحث برقم اللوحة
+            alignment: left
+        }
+        settings {
+            submitWhenEnterPressed: true
+        }
+        layout {
+            sequence: 10
+            region: @بحث
+            slot: regionBody
+            alignment: left
+            columnSpan: 6
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-search
+            width: 30
+            valuePlaceholder: أ ب ج 1234
+        }
+    )
+
+    button search (
+        buttonName: search
+        label: بحث برقم اللوحة
+        layout {
+            sequence: 40
+            region: @بحث
+            slot: regionBody
+            startNewRow: false
+            newColumn: false
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-search
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button show-all (
+        buttonName: show_all
+        label: عرض الكل
+        layout {
+            sequence: 20
+            region: @بحث
+            slot: regionBody
+            startNewRow: false
+            newColumn: false
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            cssClasses: s-btn-outline
+            icon: fa-list
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 22
+                clearCache: 22
+            }
+        }
+    )
+
+)
+

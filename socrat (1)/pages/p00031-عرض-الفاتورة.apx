@@ -1,0 +1,614 @@
+page 31 (
+    name: عرض الفاتورة
+    alias: عرض-الفاتورة
+    title: عرض الفاتورة
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    css {
+        inline:
+            ```css
+            .inv-sum{list-style:none;margin:0;padding:0;max-width:460px}
+            .inv-sum li{
+              display:flex;justify-content:space-between;align-items:baseline;
+              padding:10px 4px;
+              border-bottom:1px solid color-mix(in srgb, currentColor 12%, transparent);
+            }
+            .inv-sum li span{opacity:.7}
+            .inv-sum li b{font-weight:700}
+            .inv-sum li.net{
+              margin:6px 0;padding:12px 4px;
+              border-top:2px solid #F5A623;border-bottom:2px solid #F5A623;
+            }
+            .inv-sum li.net span{opacity:1;font-weight:700}
+            .inv-sum li.net b{color:#F5A623;font-size:20px;font-weight:800}
+            .inv-sum li.rem{border-bottom:0}
+            .inv-sum li.is-due b{color:#ff6b6f;font-size:17px}
+            .inv-sum li.is-paid b{color:#3dd68c;font-size:17px}
+            
+            @media print{
+              .inv-sum li.net b,.inv-sum li.is-due b,.inv-sum li.is-paid b{color:#000 !important}
+            }
+            .inv-head{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+            .inv-head > div{
+              display:flex;flex-direction:column;gap:4px;
+              padding:12px 14px;border-radius:10px;
+              background:color-mix(in srgb, currentColor 5%, transparent);
+              border:1px solid color-mix(in srgb, currentColor 10%, transparent);
+            }
+            .inv-head small{font-size:12px;opacity:.65}
+            .inv-head small .fa{color:#F5A623;margin-inline-end:4px}
+            .inv-head b{font-size:15px;font-weight:700}
+            .inv-head > div:first-child b{color:#F5A623;font-size:18px}
+            
+            @media (max-width:640px){.inv-head{grid-template-columns:1fr 1fr}}
+            @media print{
+              .inv-head > div{background:none;border-color:#ccc}
+              .inv-head > div:first-child b,.inv-head small .fa{color:#000}
+            }
+            @media print{
+              .t-Header,.t-Body-nav,.t-Body-actions,.t-Footer,.t-Breadcrumb-region,
+              .t-Button,#apexDevToolbar{display:none !important}
+              .t-Body-main,.t-Body-content{margin:0 !important;padding:0 !important}
+              body,.t-Region{background:#fff !important;color:#000 !important}
+            }
+            ```
+    }
+
+    region breadcrumb (
+        name: Breadcrumb
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region الدفعات (
+        name: الدفعات
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select to_char(p.payment_date, 'DD/MM/YYYY HH24:MI')        as payment_date,
+                       to_char(p.amount, 'FM999G999G990D00') || ' ج.م'       as amount,
+                       '<span class="st-badge '
+                         || case m.method_name
+                              when 'CASH'     then 'st-ready'
+                              when 'VISA'     then 'st-new'
+                              when 'INSTAPAY' then 'st-prog'
+                              else 'st-wait'
+                            end
+                         || '"><span class="fa '
+                         || case m.method_name
+                              when 'CASH'     then 'fa-money'
+                              when 'VISA'     then 'fa-credit-card'
+                              when 'INSTAPAY' then 'fa-mobile'
+                              else 'fa-wallet'
+                            end
+                         || '" aria-hidden="true"></span> '
+                         || apex_escape.html(m.method_name_ar) || '</span>'  as method_name_ar,
+                       nvl(u.full_name, '—')                                 as received_by,
+                       nvl(p.notes, '—')                                     as notes
+                  from payments p
+                  join payment_methods m on m.payment_method_id = p.payment_method_id
+                  left join users u      on u.user_id = p.received_by_user_id
+                 where p.invoice_id = :P31_INVOICE_ID
+                 order by p.payment_date
+                ```
+        }
+        layout {
+            sequence: 60
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+            icon: fa-money
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--staticRowColors
+                t-Report--rowHighlight
+                t-Report--horizontalBorders
+            ]
+        }
+        pagination {
+            type: showAll
+        }
+        messages {
+            whenNoDataFound: لسه مفيش دفعات على الفاتورة دي
+        }
+
+        column AMOUNT (
+            reportColumnQueryId: 2
+            derivedColumn: N
+            heading {
+                heading: <span class="fa fa-money" aria-hidden="true"></span> المبلغ
+                alignment: end
+            }
+            layout {
+                sequence: 20
+            }
+            columnFormatting {
+                htmlExpression: <b>#AMOUNT#</b>
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column METHOD_NAME_AR (
+            reportColumnQueryId: 3
+            derivedColumn: N
+            heading {
+                heading: <span class="fa fa-credit-card" aria-hidden="true"></span> طريقة الدفع
+                alignment: end
+            }
+            layout {
+                sequence: 30
+            }
+            sorting {
+                sortable: false
+            }
+            security {
+                escapeSpecialChars: false
+            }
+        )
+
+        column NOTES (
+            reportColumnQueryId: 5
+            derivedColumn: N
+            heading {
+                heading: <span class="fa fa-sticky-note-o" aria-hidden="true"></span> ملاحظة
+                alignment: end
+            }
+            layout {
+                sequence: 50
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column PAYMENT_DATE (
+            reportColumnQueryId: 1
+            derivedColumn: N
+            heading {
+                heading: <span class="fa fa-calendar" aria-hidden="true"></span> التاريخ
+                alignment: end
+            }
+            layout {
+                sequence: 10
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column RECEIVED_BY (
+            reportColumnQueryId: 4
+            derivedColumn: N
+            heading {
+                heading: <span class="fa fa-user" aria-hidden="true"></span> استلمها
+                alignment: end
+            }
+            layout {
+                sequence: 40
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+    )
+
+    region بنود-الفاتورة (
+        name: بنود الفاتورة
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select '<span class="st-badge '
+                         || case item_type when 'SERVICE' then 'st-new' when 'PART' then 'st-prog' else 'st-ready' end
+                         || '"><span class="fa '
+                         || case item_type when 'SERVICE' then 'fa-wrench' when 'PART' then 'fa-cube' else 'fa-tint' end
+                         || '" aria-hidden="true"></span> '
+                         || case item_type when 'SERVICE' then 'خدمة' when 'PART' then 'قطعة' else 'غسيل' end
+                         || '</span>'                                              as item_type_ar,
+                       description,
+                       quantity,
+                       to_char(unit_price, 'FM999G999G990D00') || ' ج.م'           as unit_price,
+                       to_char(line_total, 'FM999G999G990D00') || ' ج.م'           as line_total
+                  from invoice_items
+                 where invoice_id = :P31_INVOICE_ID
+                 order by case item_type when 'SERVICE' then 1 when 'PART' then 2 else 3 end,
+                          invoice_item_id
+                ```
+        }
+        layout {
+            sequence: 40
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+            icon: fa-list-ul
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--staticRowColors
+                t-Report--rowHighlight
+                t-Report--horizontalBorders
+            ]
+        }
+        pagination {
+            type: showAll
+        }
+        messages {
+            whenNoDataFound: لا توجد بنود في الفاتورة دي
+        }
+
+        column DESCRIPTION (
+            reportColumnQueryId: 2
+            derivedColumn: N
+            heading {
+                heading: <span class="fa fa-align-right" aria-hidden="true"></span> الوصف
+                alignment: end
+            }
+            layout {
+                sequence: 20
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column ITEM_TYPE_AR (
+            reportColumnQueryId: 1
+            derivedColumn: N
+            heading {
+                heading: "النوع<span class=\"fa fa-tags\" aria-hidden=\"true\"></span> "
+                alignment: end
+            }
+            layout {
+                sequence: 10
+            }
+            sorting {
+                sortable: false
+            }
+            security {
+                escapeSpecialChars: false
+            }
+        )
+
+        column LINE_TOTAL (
+            reportColumnQueryId: 5
+            derivedColumn: N
+            heading {
+                heading: <span class="fa fa-calculator" aria-hidden="true"></span> الإجمالي
+                alignment: end
+            }
+            layout {
+                sequence: 50
+            }
+            columnFormatting {
+                htmlExpression: <b>#LINE_TOTAL#</b>
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column QUANTITY (
+            reportColumnQueryId: 3
+            derivedColumn: N
+            heading {
+                heading: <span class="fa fa-cubes" aria-hidden="true"></span> الكمية
+                alignment: center
+            }
+            layout {
+                sequence: 30
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column UNIT_PRICE (
+            reportColumnQueryId: 4
+            derivedColumn: N
+            heading {
+                heading: <span class="fa fa-tag" aria-hidden="true"></span> سعر الوحدة
+                alignment: end
+            }
+            layout {
+                sequence: 40
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+    )
+
+    region بيانات-الفاتورة (
+        name: بيانات الفاتورة
+        title: بيانات الفاتورة
+        type: dynamicContent
+        source {
+            plsqlFunctionBody:
+                ```plsql
+                declare
+                  l_html clob;
+                
+                  procedure add_box(p_icon varchar2, p_label varchar2, p_value varchar2) is
+                  begin
+                    l_html := l_html
+                           || '<div><small><span class="fa ' || p_icon || '" aria-hidden="true"></span> '
+                           || p_label || '</small><b>' || p_value || '</b></div>';
+                  end;
+                begin
+                  for r in (
+                    select i.invoice_id,
+                           to_char(i.invoice_date, 'DD/MM/YYYY HH24:MI') inv_date,
+                           case when i.job_card_id is not null then 'كارت صيانة #' || i.job_card_id
+                                else 'غسيل منفرد #' || i.car_wash_id end as source_txt,
+                           cu.full_name customer_name,
+                           v.plate_number,
+                           v.make || ' ' || v.model vehicle,
+                           u.full_name cashier
+                      from invoices i
+                      left join job_cards c  on c.job_card_id = i.job_card_id
+                      left join car_wash  w  on w.car_wash_id = i.car_wash_id
+                      left join vehicles  v  on v.vehicle_id  = nvl(c.vehicle_id, w.vehicle_id)
+                      left join customers cu on cu.customer_id = v.customer_id
+                      left join users     u  on u.user_id = i.cashier_user_id
+                     where i.invoice_id = :P31_INVOICE_ID
+                  ) loop
+                    l_html := '<div class="inv-head">';
+                    add_box('fa-hashtag',     'رقم الفاتورة', 'INV-' || lpad(r.invoice_id, 4, '0'));
+                    add_box('fa-calendar',    'التاريخ',      r.inv_date);
+                    add_box('fa-wrench',      'المصدر',       apex_escape.html(r.source_txt));
+                    add_box('fa-user',        'العميل',       apex_escape.html(nvl(r.customer_name, '—')));
+                    add_box('fa-car',         'السيارة',      apex_escape.html(r.vehicle || ' - ' || r.plate_number));
+                    add_box('fa-user-circle', 'الكاشير',      apex_escape.html(nvl(r.cashier, '—')));
+                    l_html := l_html || '</div>';
+                  end loop;
+                
+                  return nvl(l_html, '<p>الفاتورة غير موجودة.</p>');
+                end;
+                ```
+        }
+        layout {
+            sequence: 30
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+            icon: fa-file-text-o
+        }
+    )
+
+    region ملخص-الفاتور (
+        name: ملخص الفاتور
+        type: dynamicContent
+        source {
+            plsqlFunctionBody:
+                ```plsql
+                declare
+                  l_inv  invoices%rowtype;
+                  l_paid number;
+                  l_rem  number;
+                  l_html clob;
+                  l_fmt  constant varchar2(20) := 'FM999G999G990D00';
+                
+                  procedure add_row(p_label varchar2, p_val number, p_class varchar2 default null) is
+                  begin
+                    l_html := l_html
+                           || '<li' || case when p_class is not null then ' class="' || p_class || '"' end || '>'
+                           || '<span>' || p_label || '</span><b>' || to_char(nvl(p_val, 0), l_fmt) || ' ج.م</b></li>';
+                  end;
+                begin
+                  select * into l_inv from invoices where invoice_id = :P31_INVOICE_ID;
+                  l_paid := pkg_payment.paid_amount(l_inv.invoice_id);
+                  l_rem  := pkg_payment.remaining_amount(l_inv.invoice_id);
+                
+                  l_html := '<ul class="inv-sum">';
+                  add_row('قبل الخصم', l_inv.subtotal);
+                  add_row('الخصم (' || nvl(l_inv.discount_percent, 0) || '%)', -nvl(l_inv.discount_amount, 0));
+                  add_row('الضريبة 14%', l_inv.tax_amount);
+                  add_row('الصافي', l_inv.total_amount, 'net');
+                  add_row('المدفوع', l_paid);
+                  add_row('المتبقي', l_rem, case when l_rem > 0 then 'rem is-due' else 'rem is-paid' end);
+                  l_html := l_html || '</ul>';
+                
+                  return l_html;
+                exception
+                  when no_data_found then
+                    return '<p>الفاتورة غير موجودة.</p>';
+                end;
+                ```
+        }
+        layout {
+            sequence: 50
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+        }
+    )
+
+    pageItem P31_INVOICE_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            slot: body
+        }
+    )
+
+    button back (
+        buttonName: back
+        label: رجوع
+        layout {
+            sequence: 30
+            region: @بيانات-الفاتورة
+            slot: edit
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-arrow-right
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 32
+            }
+        }
+    )
+
+    button bill (
+        buttonName: bill
+        label: دفع
+        layout {
+            sequence: 10
+            region: @بيانات-الفاتورة
+            slot: regionBody
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-credit-card
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 29
+                items: {
+                    P29_INVOICE_ID: &P31_INVOICE_ID.
+                }
+                clearCache: 93
+            }
+        }
+        serverSideCondition {
+            type: expression
+            plsqlExpression: pkg_payment.remaining_amount(:P31_INVOICE_ID) > 0
+        }
+    )
+
+    button print (
+        buttonName: print
+        label: طباعة
+        layout {
+            sequence: 20
+            region: @بيانات-الفاتورة
+            slot: edit
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-print
+        }
+        behavior {
+            action: definedByDynamicAction
+        }
+    )
+
+    dynamicAction new (
+        name: New
+        execution {
+            sequence: 20
+        }
+        when {
+            event: click
+            selectionType: button
+            button: @print
+        }
+
+        action native-javascript-code (
+            action: executeJsCode
+            settings {
+                jsCode: window.print();
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+    dynamicAction reload-after-payment (
+        name: Reload after payment
+        execution {
+            sequence: 10
+        }
+        when {
+            event: apexafterclosedialog
+            selectionType: button
+            button: @bill
+        }
+
+        action native-javascript-code (
+            action: executeJsCode
+            settings {
+                jsCode: location.reload();
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+)
+

@@ -1,0 +1,204 @@
+/* =====================================================================
+   SOCRAT UI - global styles (works with Socrat Light and Socrat Dark)
+   Upload to: Shared Components > Static Application Files
+   Reference in: Shared Components > User Interface Attributes > CSS > File URLs
+       #APP_FILES#socrat-ui.css
+   ===================================================================== */
+:root {
+  --s-orange: #F5A623;
+  --s-orange-dark: #D98A0B;
+  --s-green: #22C55E;
+  --s-red: #EF4444;
+  --s-blue: #3B82F6;
+  --s-gray: #A8A29E;
+  --s-radius: 12px;
+  --s-line: rgba(128, 128, 128, .18);
+}
+
+/* ---------- Header: dark text on the orange bar ---------- */
+.t-Header-logo,
+.t-Header-logo-link,
+.t-Header-navBar .t-Button,
+.t-Header-navBar .t-Button .t-Icon,
+.t-Header-controls .t-Button {
+  color: #1A1A1A !important;
+}
+
+/* ---------- Buttons ---------- */
+.t-Button {
+  position: relative;
+  overflow: hidden;               /* keeps the ripple inside the button */
+  border-radius: 10px !important;
+  font-weight: 600;
+  transition: transform .15s ease, box-shadow .2s ease,
+              background-color .2s ease, color .2s ease, filter .2s ease;
+}
+.t-Button:not(.t-Button--link):not(.t-Button--noUI):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .18);
+}
+.t-Button:active { transform: translateY(0) scale(.97); }
+
+.t-Button .t-Icon { transition: transform .2s ease; }
+.t-Button:hover .t-Icon { transform: scale(1.18); }
+
+/* Primary (Hot = Yes) */
+.t-Button--hot {
+  background: linear-gradient(135deg, var(--s-orange), var(--s-orange-dark)) !important;
+  color: #1A1A1A !important;
+  border: 0 !important;
+}
+.t-Button--hot:hover { box-shadow: 0 8px 22px rgba(245, 166, 35, .38) !important; }
+
+/* Extra styles: Button > Appearance > CSS Classes */
+.t-Button.s-btn-outline {
+  background: transparent !important;
+  border: 1px solid var(--s-orange) !important;
+  color: var(--s-orange) !important;
+}
+.t-Button.s-btn-outline:hover { background: var(--s-orange) !important; color: #1A1A1A !important; }
+
+.t-Button.s-btn-danger {
+  background: rgba(239, 68, 68, .12) !important;
+  border: 1px solid rgba(239, 68, 68, .4) !important;
+  color: var(--s-red) !important;
+}
+.t-Button.s-btn-danger:hover { background: var(--s-red) !important; color: #fff !important; }
+
+.t-Button.s-btn-success {
+  background: rgba(34, 197, 94, .12) !important;
+  border: 1px solid rgba(34, 197, 94, .4) !important;
+  color: var(--s-green) !important;
+}
+.t-Button.s-btn-success:hover { background: var(--s-green) !important; color: #fff !important; }
+
+/* Click ripple (added by socrat-ui.js) */
+.s-ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  background: rgba(255, 255, 255, .45);
+  animation: s-ripple .6s ease-out;
+  pointer-events: none;
+}
+@keyframes s-ripple { to { transform: scale(4); opacity: 0; } }
+
+/* ---------- Regions ---------- */
+.t-Region { border-radius: var(--s-radius) !important; }
+.t-Region-header { border-bottom: 1px solid var(--s-line); }
+.t-Region-headerItems--title .t-Region-title {
+  position: relative;
+  padding-inline-start: 12px;
+  font-weight: 700;
+}
+.t-Region-headerItems--title .t-Region-title::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 15%;
+  width: 4px;
+  height: 70%;
+  border-radius: 4px;
+  background: var(--s-orange);
+}
+
+/* ---------- Reports ---------- */
+.t-Report-wrap,
+.t-Report-tableWrap,
+.t-Report-report { width: 100%; }
+
+.t-Report-report th.t-Report-colHead,
+.a-IRR-header,
+.a-GV-header {
+  font-weight: 700;
+  font-size: 12px;
+}
+.t-Report-report tbody tr td,
+.a-IRR-table tr td { transition: background-color .15s ease; }
+.t-Report-report tbody tr:hover td,
+.a-IRR-table tr:hover td { background-color: rgba(245, 166, 35, .08) !important; }
+
+/* ---------- Status badges (use in an HTML Expression) ---------- */
+.s-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.s-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.s-badge--new       { color: var(--s-gray);   background: rgba(168, 162, 158, .16); }
+.s-badge--progress  { color: var(--s-orange); background: rgba(245, 166, 35, .16); }
+.s-badge--ready,
+.s-badge--ok        { color: var(--s-green);  background: rgba(34, 197, 94, .16); }
+.s-badge--delivered { color: var(--s-blue);   background: rgba(59, 130, 246, .16); }
+.s-badge--danger    { color: var(--s-red);    background: rgba(239, 68, 68, .16); }
+
+/* ---------- KPI cards (region CSS Classes: s-kpi) ---------- */
+.s-kpi .a-CardView {
+  border-radius: var(--s-radius);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.s-kpi .a-CardView:hover {
+  transform: translateY(-3px);
+  border-color: var(--s-orange);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .18);
+}
+.s-kpi .a-CardView-mainContent {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--s-orange);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Form fields ---------- */
+.apex-item-text,
+.apex-item-select,
+.apex-item-textarea,
+.apex-item-datepicker input,
+.apex-item-group--popup-lov input {
+  border-radius: 10px !important;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.apex-item-text:focus,
+.apex-item-select:focus,
+.apex-item-textarea:focus,
+.apex-item-datepicker input:focus,
+.apex-item-group--popup-lov input:focus {
+  border-color: var(--s-orange) !important;
+  box-shadow: 0 0 0 3px rgba(245, 166, 35, .22) !important;
+}
+
+/* ---------- Empty state (No Data Found message) ---------- */
+.s-empty {
+  padding: 28px 12px;
+  text-align: center;
+  opacity: .75;
+}
+.s-empty .fa {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 32px;
+  color: var(--s-orange);
+}
+
+/* ---------- Soft entrance animation ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .t-Body-contentInner > .container .t-Region,
+  .s-kpi .a-CardView-item {
+    animation: s-fade-up .4s ease both;
+  }
+}
+@keyframes s-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}

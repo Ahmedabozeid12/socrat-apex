@@ -1,0 +1,134 @@
+list navigation-bar (
+    name: Navigation Bar
+
+    entry app-user (
+        label: &APP_USER.
+        icon {
+            imageIconCssClasses: fa-user
+        }
+        layout {
+            sequence: 10
+        }
+        link {
+            target: {
+                type: url
+                url: #
+            }
+        }
+        userDefinedAttributes {
+            2: has-username
+        }
+    )
+
+    entry list_item (
+        label: ---
+        layout {
+            sequence: 20
+            parentEntry: @app-user
+        }
+        link {
+            target: {
+                type: url
+                url: separator
+            }
+        }
+        serverSideCondition {
+            type: userIsAuthenticated
+        }
+    )
+
+    entry sign-out (
+        label: Sign Out
+        icon {
+            imageIconCssClasses: fa-sign-out
+        }
+        layout {
+            sequence: 30
+            parentEntry: @app-user
+        }
+        link {
+            target: {
+                type: url
+                url: &LOGOUT_URL.
+            }
+        }
+        serverSideCondition {
+            type: userIsAuthenticated
+        }
+    )
+
+    entry التنبيهات (
+        label: التنبيهات
+        icon {
+            imageIconCssClasses: fa-bell
+        }
+        layout {
+            sequence: 50
+        }
+        link {
+            target: {
+                page: 24
+            }
+        }
+        userDefinedAttributes {
+            1: &AI_ALERT_COUNT.
+        }
+        security {
+            authorizationScheme: @stor-auth
+        }
+    )
+
+    entry المظهر (
+        label: المظهر
+        icon {
+            imageIconCssClasses: fa-adjust
+        }
+        layout {
+            sequence: 40
+        }
+        link {
+            target: {
+                type: url
+                url: javascript:SocratTheme.toggle();
+            }
+        }
+    )
+
+    entry حجز-موعد-للعميل (
+        label: حجز موعد (للعميل)
+        icon {
+            imageIconCssClasses: fa-calendar-plus-o
+        }
+        layout {
+            sequence: 70
+        }
+        link {
+            target: {
+                page: 37
+            }
+        }
+        security {
+            authorizationScheme: @reception-auth
+        }
+    )
+
+    entry كارت-جديد (
+        label: كارت جديد
+        icon {
+            imageIconCssClasses: fa-plus
+        }
+        layout {
+            sequence: 60
+        }
+        link {
+            target: {
+                page: 21
+            }
+        }
+        security {
+            authorizationScheme: @reception-auth
+        }
+    )
+
+)
+

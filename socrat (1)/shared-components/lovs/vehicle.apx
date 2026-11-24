@@ -1,0 +1,26 @@
+lov vehicle (
+    name: "VEHICLE "
+    source {
+        location: staticValues
+    }
+
+    entry large (
+        sequence: 2
+        display: كيبرة
+        return: LARGE
+    )
+
+    entry small (
+        sequence: 1
+        display: صغيرة
+        return: SMALL
+    )
+
+    entry suv (
+        sequence: 3
+        display: دفع رباعي
+        return: SUV
+    )
+
+)
+

@@ -1,0 +1,345 @@
+page 30 (
+    name: قائمة الفنيين
+    alias: قائمة-الفنيين
+    title: قائمة الفنيين
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    css {
+        inline:
+            ```css
+            .st-badge{display:inline-block;padding:2px 12px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+            .st-ready{background:rgba(74,222,159,.16);color:#4ADE9F}
+            .st-cancel{background:rgba(170,176,188,.16);color:#AAB0BC}
+            #tech-search .t-Region-body .row{align-items:center}
+            #tech-search .t-Button{width:100%;height:48px;justify-content:center;white-space:nowrap}
+            .s-tech{display:flex;flex-direction:column;gap:12px}
+            .s-tech-phone{font-size:13px;opacity:.85}
+            .s-tech-load-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px}
+            .s-tech-load-top .fa{color:#F5A623}
+            .s-tech-bar{height:6px;border-radius:6px;overflow:hidden;
+              background:color-mix(in srgb, currentColor 12%, transparent)}
+            .s-tech-bar span{display:block;height:100%;border-radius:6px;transition:width .6s ease}
+            .s-tech-bar .is-low{background:#3dd68c}
+            .s-tech-bar .is-mid{background:#F5A623}
+            .s-tech-bar .is-high{background:#ff6b6f}
+            .s-tech-off{opacity:.55}
+            ```
+    }
+
+    region breadcrumb (
+        name: Breadcrumb
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 20
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region new (
+        name: New
+        title: إحصائيات الفنيين
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select 1 sn, 'إجمالي الفنيين' card_title, count(*) card_value, 'fa fa-users' card_icon
+                  from technicians
+                union all
+                select 2, 'نشطين', count(*), 'fa fa-check-circle'
+                  from technicians where is_active = 'Y'
+                union all
+                select 3, 'غير نشطين', count(*), 'fa fa-pause-circle'
+                  from technicians where nvl(is_active, 'N') <> 'Y'
+                order by sn
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+        title {
+            column: CARD_TITLE
+        }
+        body {
+            advancedFormatting: true
+            htmlExpression: <div class="s-kpi-value">&CARD_VALUE.</div>
+        }
+        iconAndBadge {
+            iconSource: iconClassColumn
+            iconColumn: CARD_ICON
+        }
+    )
+
+    region بحث (
+        name: بحث
+        title: بحث
+        type: staticContent
+        layout {
+            sequence: 30
+            slot: body
+            columnSpan: 12
+        }
+        appearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+        }
+    )
+
+    region قائمة-الفنيين (
+        name: قائمة الفنيين
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select x.*,
+                       least(x.open_cards * 20, 100)                              as load_pct,
+                       case when x.open_cards >= 5 then 'is-high'
+                            when x.open_cards >= 3 then 'is-mid'
+                            else 'is-low' end                                     as load_class,
+                       case when x.active_label = 'غير نشط' then 's-tech-off' end as card_class
+                  from (select t.technician_id,
+                               t.full_name,
+                               case t.specialty
+                                 when 'MECHANICAL' then 'ميكانيكا'
+                                 when 'ELECTRICAL' then 'كهرباء'
+                                 when 'SUSPENSION' then 'تعليق وفرامل'
+                                 when 'BODY'       then 'سمكرة'
+                                 else t.specialty
+                               end as specialty,
+                               t.phone,
+                               (select count(distinct s.job_card_id)
+                                  from job_card_services s
+                                  join job_cards c on c.job_card_id = s.job_card_id
+                                 where s.technician_id = t.technician_id
+                                   and c.status_id not in (7, 8))                       as open_cards,
+                               case t.is_active when 'Y' then 'نشط' else 'غير نشط' end   as active_label,
+                               case t.is_active when 'Y' then 'st-ready' else 'st-cancel' end as active_class
+                          from technicians t) x
+                 where :P30_SEARCH is null
+                    or upper(x.full_name) like '%' || upper(:P30_SEARCH) || '%'
+                    or x.specialty        like '%' || :P30_SEARCH || '%'
+                 order by x.full_name
+                ```
+            pageItemsToSubmit: P30_SEARCH
+        }
+        layout {
+            sequence: 40
+            slot: body
+        }
+        appearance {
+            template: @/cards-container
+            templateOptions: [
+                #DEFAULT#
+                t-CardsRegion--hideHeader js-addHiddenHeadingRoleDesc
+            ]
+        }
+        componentAppearance {
+            gridColumns: 4
+        }
+        card {
+            cssClasses: &CARD_CLASS.
+        }
+        title {
+            column: FULL_NAME
+        }
+        subtitle {
+            column: SPECIALTY
+        }
+        body {
+            advancedFormatting: true
+            htmlExpression:
+                ```html
+                <div class="s-tech">
+                  <a class="s-tech-phone" href="tel:&PHONE.">
+                    <span class="fa fa-phone" aria-hidden="true"></span> &PHONE.
+                  </a>
+                  <div>
+                    <div class="s-tech-load-top">
+                      <span><span class="fa fa-clipboard" aria-hidden="true"></span> كروت مفتوحة</span>
+                      <b>&OPEN_CARDS.</b>
+                    </div>
+                    <div class="s-tech-bar"><span class="&LOAD_CLASS." style="width:&LOAD_PCT.%"></span></div>
+                  </div>
+                </div>
+                ```
+        }
+        iconAndBadge {
+            iconSource: initials
+            iconColumn: FULL_NAME
+            badgeColumn: ACTIVE_LABEL
+            badgeCssClasses: [
+                st-badge
+                &ACTIVE_CLASS.
+            ]
+        }
+
+        action action (
+            label: تعديل
+            layout {
+                sequence: 10
+            }
+            behavior {
+                target: {
+                    page: 14
+                    items: {
+                        P14_TECHNICIAN_ID: &TECHNICIAN_ID.
+                    }
+                }
+            }
+            appearance {
+                displayType: textWithIcon
+                icon: fa-pencil
+            }
+        )
+
+        action action_1 (
+            label: اتصال
+            layout {
+                sequence: 20
+            }
+            behavior {
+                type: redirectUrl
+                targetUrl: tel:&PHONE.
+            }
+            appearance {
+                displayType: textWithIcon
+                icon: fa-phone
+                hot: true
+            }
+        )
+
+    )
+
+    pageItem P30_SEARCH (
+        type: textField
+        label {
+            label: بحث باسم الفني أو التخصص
+            alignment: left
+        }
+        settings {
+            submitWhenEnterPressed: true
+        }
+        layout {
+            sequence: 10
+            region: @بحث
+            slot: regionBody
+            alignment: left
+            columnSpan: 8
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-search
+            width: 30
+            valuePlaceholder: اسم الفني
+        }
+    )
+
+    button add-tech (
+        buttonName: add_tech
+        label: إضافة فني
+        layout {
+            sequence: 10
+            region: @قائمة-الفنيين
+            slot: aboveBox
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-user-plus
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 14
+                clearCache: 14
+            }
+        }
+    )
+
+    button search (
+        buttonName: SEARCH
+        label: بحث
+        layout {
+            sequence: 20
+            region: @بحث
+            slot: regionBody
+            columnSpan: 2
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+                t-Button--stretch
+            ]
+            icon: fa-search
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button show-all (
+        buttonName: SHOW_ALL
+        label: عرض الكل
+        layout {
+            sequence: 30
+            region: @بحث
+            slot: regionBody
+            startNewRow: false
+            columnSpan: 2
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+                t-Button--stretch
+            ]
+            cssClasses: s-btn-outline
+            icon: fa-list
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 30
+                clearCache: 30
+            }
+        }
+    )
+
+)
+

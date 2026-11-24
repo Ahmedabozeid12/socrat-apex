@@ -1,0 +1,17 @@
+lov الصنف (
+    name: الصنف
+    source {
+        type: sqlQuery
+        sqlQuery:
+            ```sql
+            select part_code || ' – ' || part_name as d, part_id as r
+              from parts
+             order by part_name
+            ```
+    }
+    columnMapping {
+        return: R
+        display: D
+    }
+)
+

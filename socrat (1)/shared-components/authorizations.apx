@@ -1,0 +1,117 @@
+authorization administration-rights (
+    name: Administration Rights
+    type: plSqlFunctionBody
+    settings {
+        plsqlFunctionBody: return true;
+    }
+    error {
+        errorMessage: Insufficient privileges, user is not an Administrator
+    }
+)
+
+authorization customer-only (
+    name: CUSTOMER_ONLY
+    type: plSqlFunctionBody
+    settings {
+        plsqlFunctionBody:
+            ```plsql
+            BEGIN
+                RETURN
+                    NVL(V('G_USER_TYPE'), 'X') = 'CUSTOMER'
+                    AND V('G_CUSTOMER_ID') IS NOT NULL;
+            END;
+            ```
+    }
+    advanced {
+        evaluationType: perSession
+    }
+)
+
+authorization manager-auth (
+    name: manager_auth
+    type: existsSqlQuery
+    settings {
+        sqlQuery:
+            ```sql
+            select 1
+            from users u
+            join roles r on r.role_id = u.role_id
+            where upper(u.username) = upper(:APP_USER)
+              and r.role_name = 'ADMIN'
+              and u.is_active = 'Y'
+            ```
+    }
+    error {
+        errorMessage: هذه من صلاحيات المدير فقط
+    }
+    advanced {
+        evaluationType: perSession
+    }
+)
+
+authorization reception-auth (
+    name: reception_auth
+    type: existsSqlQuery
+    settings {
+        sqlQuery:
+            ```sql
+            select 1
+            from users u
+            join roles r on r.role_id = u.role_id
+            where upper(u.username) = upper(:APP_USER)
+              and r.role_name in ('RECEPTION', 'ADMIN')
+              and u.is_active = 'Y'
+            ```
+    }
+    error {
+        errorMessage: هذخ من صلاحيات الريسبشن فقط
+    }
+    advanced {
+        evaluationType: perSession
+    }
+)
+
+authorization stor-auth (
+    name: stor_auth
+    type: existsSqlQuery
+    settings {
+        sqlQuery:
+            ```sql
+            select 1
+            from users u
+            join roles r on r.role_id = u.role_id
+            where upper(u.username) = upper(:APP_USER)
+              and r.role_name in ('STOREKEEPER', 'ADMIN','RECEPTION')
+              and u.is_active = 'Y'
+            ```
+    }
+    error {
+        errorMessage: هذه من صلاحيات  مدير المخزن فقط
+    }
+    advanced {
+        evaluationType: perSession
+    }
+)
+
+authorization super-auth (
+    name: super_auth
+    type: existsSqlQuery
+    settings {
+        sqlQuery:
+            ```sql
+            select 1
+            from users u
+            join roles r on r.role_id = u.role_id
+            where upper(u.username) = upper(:APP_USER)
+              and r.role_name in ('SUPERVISOR', 'ADMIN','RECEPTION')
+              and u.is_active = 'Y'
+            ```
+    }
+    error {
+        errorMessage: هذه من صلاحيات مدير الورشه فقط
+    }
+    advanced {
+        evaluationType: perSession
+    }
+)
+

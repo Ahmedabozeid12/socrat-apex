@@ -1,0 +1,17 @@
+authentication custom (
+    name: custom
+    type: custom
+    settings {
+        authFunctionName: AUTHINTACTION_SOCRAT
+    }
+    loginProcessing {
+        preAuthenticationProcedureName: SET_CUSTOMER_SESSION
+        postAuthenticationProcedureName: SET_CUSTOMER_SESSION
+    }
+)
+
+authentication oracle-apex-accounts (
+    name: Oracle APEX Accounts
+    type: oracleApexAccounts
+)
+

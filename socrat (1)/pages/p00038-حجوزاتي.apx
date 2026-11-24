@@ -1,0 +1,407 @@
+page 38 (
+    name: حجوزاتي
+    alias: حجوزاتي
+    title: حجوزاتي
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+
+    region breadcrumb (
+        name: Breadcrumb
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region my-bookings (
+        name: حجوزاتي
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select a.appointment_id,
+                       v.plate_number,
+                       v.make || ' ' || v.model                                   as vehicle_name,
+                       to_char(s.start_at, 'FMDay DD FMMonth YYYY',
+                               'NLS_DATE_LANGUAGE=ARABIC')                        as appointment_date,
+                       to_char(s.start_at, 'FMHH:MI')
+                         || case when to_char(s.start_at, 'HH24') < '12'
+                                 then ' صباحًا' else ' مساءً' end                 as appointment_time,
+                       a.customer_notes,
+                       case a.status
+                         when 'PENDING'   then 'قيد الانتظار'
+                         when 'CONFIRMED' then 'تم التأكيد'
+                         when 'CANCELLED' then 'ملغي'
+                         when 'COMPLETED' then 'مكتمل'
+                         else a.status
+                       end                                                        as status_name,
+                       case
+                         when a.status in ('PENDING', 'CONFIRMED')
+                          and s.start_at > sysdate
+                         then '<button type="button" class="t-Button t-Button--small t-Button--danger s-cancel" data-id="'
+                              || a.appointment_id
+                              || '"><span class="fa fa-times-circle" aria-hidden="true"></span> إلغاء</button>'
+                       end                                                        as cancel_btn
+                  from appointments a
+                  join vehicles v          on v.vehicle_id = a.vehicle_id
+                  join appointment_slots s on s.slot_id    = a.slot_id
+                 where a.customer_id = to_number(:G_CUSTOMER_ID)
+                 order by s.start_at desc
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/interactive-report
+            templateOptions: [
+                #DEFAULT#
+                t-IRR-region--hideHeader js-addHiddenHeadingRoleDesc
+            ]
+        }
+        pagination {
+            type: rowRangesXToY
+        }
+        messages {
+            whenNoDataFound:
+                ```
+                لاتوجد سيارة مسجلة لديك
+                
+                ```
+            whenMoreDataFound: The maximum row count for this report is #MAX_ROW_COUNT# rows.  Please apply a filter to reduce the number of records in your query.
+        }
+        searchBar {
+            includeSearchBar: false
+        }
+        advanced {
+            savedReportMappingIdentifier: 14924640960071520566
+        }
+
+        column APPOINTMENT_DATE (
+            type: plainText
+            heading {
+                heading: تاريخ الحجز
+            }
+            layout {
+                sequence: 60
+            }
+            source {
+                dataType: varchar2
+            }
+            advanced {
+                endUserAlias: D
+            }
+        )
+
+        column APPOINTMENT_ID (
+            type: hidden
+            heading {
+                heading: الغاء الحجز
+            }
+            layout {
+                sequence: 10
+            }
+            source {
+                dataType: number
+            }
+            advanced {
+                endUserAlias: A
+            }
+        )
+
+        column APPOINTMENT_TIME (
+            type: plainText
+            heading {
+                heading: الوقت
+            }
+            layout {
+                sequence: 70
+            }
+            appearance {
+                formatMask: FMHH:FMMI
+            }
+            source {
+                dataType: varchar2
+            }
+            advanced {
+                endUserAlias: E
+            }
+        )
+
+        column CANCEL_BTN (
+            type: plainText
+            heading {
+                heading: إلغاء
+            }
+            layout {
+                sequence: 110
+            }
+            appearance {
+                cssClasses: s-cancel
+            }
+            source {
+                dataType: varchar2
+            }
+            advanced {
+                endUserAlias: H
+            }
+            enableUsersTo {
+                hide: false
+                sort: false
+                filter: false
+                highlight: false
+                controlBreak: false
+                aggregate: false
+                compute: false
+                chart: false
+                groupBy: false
+                pivot: false
+            }
+            security {
+                escapeSpecialChars: false
+            }
+        )
+
+        column CUSTOMER_NOTES (
+            type: plainText
+            heading {
+                heading: وصف المشكلة
+            }
+            layout {
+                sequence: 80
+            }
+            source {
+                dataType: varchar2
+            }
+            advanced {
+                endUserAlias: F
+            }
+        )
+
+        column PLATE_NUMBER (
+            type: plainText
+            heading {
+                heading: رقم اللوحة
+            }
+            layout {
+                sequence: 40
+            }
+            source {
+                dataType: varchar2
+            }
+            advanced {
+                endUserAlias: B
+            }
+        )
+
+        column STATUS_NAME (
+            type: plainText
+            heading {
+                heading: حالة الحجز
+            }
+            layout {
+                sequence: 100
+            }
+            source {
+                dataType: varchar2
+            }
+            advanced {
+                endUserAlias: G
+            }
+        )
+
+        column VEHICLE_NAME (
+            type: plainText
+            heading {
+                heading: السيارة
+            }
+            layout {
+                sequence: 50
+            }
+            source {
+                dataType: varchar2
+            }
+            advanced {
+                endUserAlias: C
+            }
+        )
+
+        savedReport primary (
+            visibility: primaryDefault
+            view {
+                rowsPerPage: 50
+            }
+
+            displayColumn APPOINTMENT_DATE (
+                sequence: 4
+            )
+
+            displayColumn APPOINTMENT_ID (
+                sequence: 1
+            )
+
+            displayColumn APPOINTMENT_TIME (
+                sequence: 5
+            )
+
+            displayColumn CUSTOMER_NOTES (
+                sequence: 6
+            )
+
+            displayColumn PLATE_NUMBER (
+                sequence: 2
+            )
+
+            displayColumn STATUS_NAME (
+                sequence: 7
+            )
+
+            displayColumn VEHICLE_NAME (
+                sequence: 3
+            )
+
+        )
+
+    )
+
+    pageItem P38_APPOINTMENT_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @my-bookings
+            slot: regionBody
+        }
+    )
+
+    button add-appointment (
+        buttonName: ADD_APPOINTMENT
+        label: حجز موعد جديد
+        layout {
+            sequence: 10
+            region: @my-bookings
+            slot: aboveBox
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-calendar-plus-o
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 37
+                clearCache: 37
+            }
+        }
+    )
+
+    dynamicAction new (
+        name: New
+        execution {
+            sequence: 10
+            eventScope: dynamic
+            staticContainer: body
+        }
+        when {
+            event: click
+            selectionType: jQuerySelector
+            jquerySelector: .s-cancel
+        }
+
+        action native-javascript-code (
+            action: executeJsCode
+            settings {
+                jsCode:
+                    ```javascript-browser
+                    var btn = this.triggeringElement;
+                    var id  = btn.dataset.id;
+                    var regionId = $(btn).closest('.t-IRR-region, .t-Region').attr('id');
+                    
+                    apex.message.confirm('متأكد إنك عاوز تلغي الحجز ده؟', function (ok) {
+                      if (!ok) return;
+                    
+                      apex.server.process('CANCEL_BOOKING', { x01: id }, {
+                        success: function (res) {
+                          if (res.ok) {
+                            apex.message.showPageSuccess('تم إلغاء الحجز ✅');
+                            apex.region(regionId).refresh();
+                          } else {
+                            apex.message.alert('الحجز ده مينفعش يتلغى.');
+                          }
+                        },
+                        error: function () {
+                          apex.message.alert('حصل خطأ، حاول تاني.');
+                        }
+                      });
+                    });
+                    ```
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+    process cancel-booking (
+        name: CANCEL_BOOKING
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                declare
+                  l_count number;
+                begin
+                  update appointments a
+                     set a.status = 'CANCELLED'
+                   where a.appointment_id = to_number(apex_application.g_x01)
+                     and a.customer_id    = to_number(:G_CUSTOMER_ID)
+                     and a.status in ('PENDING', 'CONFIRMED')
+                     and exists (select 1
+                                   from appointment_slots s
+                                  where s.slot_id  = a.slot_id
+                                    and s.start_at > sysdate);
+                  l_count := sql%rowcount;
+                
+                  apex_json.open_object;
+                  apex_json.write('ok', l_count = 1);
+                  apex_json.close_object;
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: ajaxCallback
+        }
+        advanced {
+            executionMappingIdentifier: 16238936531414521929
+        }
+    )
+
+)
+

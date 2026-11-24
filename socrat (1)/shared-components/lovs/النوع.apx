@@ -1,0 +1,20 @@
+lov النوع (
+    name: النوع
+    source {
+        location: staticValues
+    }
+
+    entry female (
+        sequence: 2
+        display: مؤنث
+        return: FEMALE
+    )
+
+    entry male (
+        sequence: 1
+        display: ذكر
+        return: MALE
+    )
+
+)
+

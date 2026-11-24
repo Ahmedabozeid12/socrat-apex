@@ -1,0 +1,356 @@
+page 24 (
+    name: التنبيهات
+    alias: التنبيهات
+    title: التنبيهات
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    css {
+        inline:
+            ```css
+            .alert-num{font-size:34px;font-weight:700;line-height:1.2}
+            .st-badge{display:inline-block;padding:2px 12px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+            .st-wait{background:rgba(255,167,38,.16);color:#FFA726}
+            .st-late{background:rgba(255,122,138,.16);color:#FF7A8A}
+            ```
+    }
+
+    region alert-cards (
+        name: alert_cards
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select 1 as sort_no,
+                       'إجمالي التنبيهات' as card_title,
+                       'تحتاج مراجعة' as card_sub,
+                       (select count(*) from job_cards
+                         where expected_delivery_date < trunc(sysdate) and status_id not in (7, 8))
+                       + (select count(*) from parts where quantity_on_hand < reorder_level) as card_value,
+                       null as link_url
+                  from dual
+                union all
+                select 2,
+                       'أوامر الشغل المتأخرة',
+                       'عرض الكروت',
+                       (select count(*) from job_cards
+                         where expected_delivery_date < trunc(sysdate) and status_id not in (7, 8)),
+                       apex_page.get_url(p_page => 20, p_items => 'P20_IS_LATE', p_values => 'Y', p_clear_cache => '20')
+                  from dual
+                union all
+                select 3,
+                       'قطع الغيار المنخفضة الرصيد',
+                       'عرض المخزن',
+                       (select count(*) from parts where quantity_on_hand < reorder_level),
+                       apex_page.get_url(p_page => 8, p_items => 'P8_LOW', p_values => 'Y', p_clear_cache => '8')
+                  from dual
+                order by sort_no
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+            columnSpan: 12
+        }
+        appearance {
+            template: @/cards-container
+            templateOptions: [
+                #DEFAULT#
+                t-CardsRegion--hideHeader js-addHiddenHeadingRoleDesc
+                t-Form--stretchInputs
+            ]
+        }
+        componentAppearance {
+            gridColumns: 3
+            cssClasses: s-kpi
+        }
+        title {
+            column: CARD_TITLE
+        }
+        subtitle {
+            column: CARD_SUB
+        }
+        body {
+            column: CARD_VALUE
+        }
+    )
+
+    region breadcrumb (
+        name: Breadcrumb
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region أصناف-تحت-الحد-الأدنى (
+        name: أصناف تحت الحد الأدنى
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select part_code,
+                       part_name,
+                       quantity_on_hand,
+                       reorder_level,
+                       '<span class="st-badge ' ||
+                         case when quantity_on_hand < reorder_level / 2 then 'st-late' else 'st-wait' end ||
+                       '">باقي ' || quantity_on_hand || '</span>' as remaining
+                  from parts
+                 where quantity_on_hand < reorder_level
+                 order by quantity_on_hand
+                ```
+        }
+        layout {
+            sequence: 30
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+                t-Form--stretchInputs
+            ]
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--staticRowColors
+                t-Report--rowHighlight
+                t-Report--horizontalBorders
+            ]
+        }
+        messages {
+            whenNoDataFound: كل الأصناف فوق الحد الأدنى 👍
+        }
+
+        column PART_CODE (
+            reportColumnQueryId: 1
+            derivedColumn: N
+            heading {
+                heading: الكود
+                alignment: end
+            }
+            layout {
+                sequence: 10
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column PART_NAME (
+            reportColumnQueryId: 2
+            derivedColumn: N
+            heading {
+                heading: الصنف
+                alignment: end
+            }
+            layout {
+                sequence: 20
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column QUANTITY_ON_HAND (
+            reportColumnQueryId: 3
+            derivedColumn: N
+            heading {
+                heading: الكمية
+                alignment: end
+            }
+            layout {
+                sequence: 30
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column REMAINING (
+            reportColumnQueryId: 5
+            derivedColumn: N
+            heading {
+                heading: المتبقي
+                alignment: end
+            }
+            layout {
+                sequence: 50
+            }
+            sorting {
+                sortable: false
+            }
+            security {
+                escapeSpecialChars: false
+            }
+        )
+
+        column REORDER_LEVEL (
+            reportColumnQueryId: 4
+            derivedColumn: N
+            heading {
+                heading: الحد الأدنى
+                alignment: end
+            }
+            layout {
+                sequence: 40
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+    )
+
+    region كروت-تجاوزت-موعد-التسليم (
+        name: كروت تجاوزت موعد التسليم
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select c.job_card_id,
+                       cu.full_name as customer_name,
+                       v.make || ' ' || v.model as vehicle,
+                       to_char(c.expected_delivery_date, 'DD/MM/YYYY') as due_date,
+                       '<span class="st-badge st-late">متأخر ' || (trunc(sysdate) - trunc(c.expected_delivery_date)) || ' يوم</span>' as late_by
+                  from job_cards c
+                  join vehicles v   on v.vehicle_id = c.vehicle_id
+                  join customers cu on cu.customer_id = v.customer_id
+                 where c.expected_delivery_date < trunc(sysdate)
+                   and c.status_id not in (7, 8)
+                 order by c.expected_delivery_date
+                ```
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+                t-Form--stretchInputs
+            ]
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--staticRowColors
+                t-Report--rowHighlight
+                t-Report--horizontalBorders
+            ]
+        }
+        messages {
+            whenNoDataFound: مفيش كروت متأخرة 👍.
+        }
+
+        column CUSTOMER_NAME (
+            reportColumnQueryId: 2
+            derivedColumn: N
+            heading {
+                heading: العميل
+                alignment: end
+            }
+            layout {
+                sequence: 20
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column DUE_DATE (
+            reportColumnQueryId: 4
+            derivedColumn: N
+            heading {
+                heading: موعد التسليم
+                alignment: end
+            }
+            layout {
+                sequence: 40
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column JOB_CARD_ID (
+            reportColumnQueryId: 1
+            derivedColumn: N
+            heading {
+                heading: رقم الكارت
+                alignment: end
+            }
+            layout {
+                sequence: 10
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column LATE_BY (
+            reportColumnQueryId: 5
+            derivedColumn: N
+            heading {
+                heading: التأخير
+                alignment: end
+            }
+            layout {
+                sequence: 50
+            }
+            sorting {
+                sortable: false
+            }
+            security {
+                escapeSpecialChars: false
+            }
+        )
+
+        column VEHICLE (
+            reportColumnQueryId: 3
+            derivedColumn: N
+            heading {
+                heading: السيارة
+                alignment: end
+            }
+            layout {
+                sequence: 30
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+    )
+
+)
+

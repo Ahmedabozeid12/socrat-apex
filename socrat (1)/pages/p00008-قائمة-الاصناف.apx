@@ -1,0 +1,458 @@
+page 8 (
+    name: قائمة الاصناف
+    alias: قائمة-الاصناف
+    title: قائمة الاصناف
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    css {
+        inline:
+            ```css
+            .st-badge{display:inline-block;padding:2px 12px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+            .st-ready{background:rgba(74,222,159,.16);color:#4ADE9F}
+            .st-wait{background:rgba(255,167,38,.16);color:#FFA726}
+            .st-late{background:rgba(255,122,138,.16);color:#FF7A8A}
+            #parts-search .t-Region-body .row{align-items:center}
+            #parts-search .t-Button{width:100%;justify-content:center;white-space:nowrap}
+            #parts-search .t-Region-body .row{align-items:center}
+            #parts-search .t-Button{
+              width:100%;
+              height:48px;
+              justify-content:center;
+              white-space:nowrap;
+            }
+            ```
+    }
+
+    region breadcrumb (
+        name: Breadcrumb
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region parts-search (
+        name: بحث
+        title: بحث
+        type: staticContent
+        layout {
+            sequence: 30
+            slot: body
+            startNewRow: false
+            newColumn: false
+        }
+        appearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+        }
+    )
+
+    region قائمة-الاصناف (
+        name: قائمة الاصناف
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select part_id,
+                       part_code,
+                       part_name,
+                       category,
+                       unit,
+                       quantity_on_hand,
+                       reorder_level,
+                        UNIT_COST,
+                       SELLING_PRICE,
+                       case when quantity_on_hand < reorder_level           then 'تحت الحد'
+                            when quantity_on_hand < reorder_level * 1.5     then 'قريب من الحد'
+                            else 'متوفر' end as stock_label,
+                       case when quantity_on_hand < reorder_level           then 'st-late'
+                            when quantity_on_hand < reorder_level * 1.5     then 'st-wait'
+                            else 'st-ready' end as stock_class
+                  from parts
+                 where (:P8_SEARCH is null
+                        or upper(part_code) like '%' || upper(:P8_SEARCH) || '%'
+                        or upper(part_name) like '%' || upper(:P8_SEARCH) || '%')
+                   and (:P8_LOW is null or quantity_on_hand < reorder_level)
+                 order by part_code
+                ```
+            pageItemsToSubmit: [
+                P8_SEARCH
+                P8_LOW
+            ]
+        }
+        layout {
+            sequence: 50
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--noPadding
+                t-Region--scrollBody
+            ]
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--stretch
+                t-Report--staticRowColors
+                t-Report--rowHighlight
+                t-Report--horizontalBorders
+                t-Report--hideNoPagination
+            ]
+        }
+        messages {
+            whenNoDataFound: مفيش أصناف مطابقة.
+        }
+
+        column CATEGORY (
+            reportColumnQueryId: 4
+            derivedColumn: N
+            heading {
+                heading: الصنف
+                alignment: end
+            }
+            layout {
+                sequence: 4
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column PART_CODE (
+            reportColumnQueryId: 2
+            derivedColumn: N
+            type: link
+            heading {
+                heading: كود الصنف
+                alignment: end
+            }
+            layout {
+                sequence: 2
+            }
+            link {
+                target: {
+                    page: 11
+                    items: {
+                        P11_PART_ID: #PART_ID#
+                    }
+                }
+                linkText: #PART_CODE#
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column PART_ID (
+            reportColumnQueryId: 1
+            derivedColumn: N
+            type: hidden
+            layout {
+                sequence: 1
+            }
+        )
+
+        column PART_NAME (
+            reportColumnQueryId: 3
+            derivedColumn: N
+            heading {
+                heading: اسم الصنف
+                alignment: end
+            }
+            layout {
+                sequence: 3
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column QUANTITY_ON_HAND (
+            reportColumnQueryId: 6
+            derivedColumn: N
+            heading {
+                heading: الكمية
+                alignment: end
+            }
+            layout {
+                sequence: 6
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column REORDER_LEVEL (
+            reportColumnQueryId: 7
+            derivedColumn: N
+            heading {
+                heading: الحد الأدنى
+                alignment: end
+            }
+            layout {
+                sequence: 7
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column SELLING_PRICE (
+            reportColumnQueryId: 9
+            derivedColumn: N
+            heading {
+                heading: سعر البيع
+                alignment: end
+            }
+            layout {
+                sequence: 29
+            }
+            appearance {
+                formatMask: 999G999G990
+            }
+            columnFormatting {
+                htmlExpression: #SELLING_PRICE# ج.م
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column STOCK_CLASS (
+            reportColumnQueryId: 11
+            derivedColumn: N
+            type: hidden
+            layout {
+                sequence: 9
+            }
+        )
+
+        column STOCK_LABEL (
+            reportColumnQueryId: 10
+            derivedColumn: N
+            heading {
+                heading: الحالة
+                alignment: end
+            }
+            layout {
+                sequence: 8
+            }
+            columnFormatting {
+                htmlExpression: <span class="st-badge #STOCK_CLASS#">#STOCK_LABEL#</span>
+            }
+            sorting {
+                sortable: false
+            }
+            security {
+                escapeSpecialChars: false
+            }
+        )
+
+        column UNIT (
+            reportColumnQueryId: 5
+            derivedColumn: N
+            heading {
+                heading: الوحدة
+                alignment: end
+            }
+            layout {
+                sequence: 5
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column UNIT_COST (
+            reportColumnQueryId: 8
+            derivedColumn: N
+            heading {
+                heading: سعر التكلفة
+                alignment: end
+            }
+            layout {
+                sequence: 19
+            }
+            appearance {
+                formatMask: 999G999G990
+            }
+            columnFormatting {
+                htmlExpression: #UNIT_COST# ج.م
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+    )
+
+    pageItem P8_LOW (
+        type: hidden
+        settings {
+            valueProtected: false
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+    )
+
+    pageItem P8_SEARCH (
+        type: textField
+        label {
+            label: بحث بالكود أو الاسم
+            alignment: left
+        }
+        settings {
+            submitWhenEnterPressed: true
+        }
+        layout {
+            sequence: 10
+            region: @parts-search
+            slot: regionBody
+            alignment: left
+            columnSpan: 6
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-search
+            width: 30
+        }
+    )
+
+    button add-part (
+        buttonName: ADD_PART
+        label: إضافة صنف
+        layout {
+            sequence: 10
+            region: @قائمة-الاصناف
+            slot: copy
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-plus
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 11
+                clearCache: 11
+            }
+        }
+    )
+
+    button low-stock (
+        buttonName: LOW_STOCK
+        label: تحت الحد الأدنى
+        layout {
+            sequence: 40
+            region: @parts-search
+            slot: regionBody
+            startNewRow: false
+            columnSpan: 2
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            cssClasses: s-btn-outline
+            icon: fa-exclamation-triangle
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 8
+                items: {
+                    P8_LOW: Y
+                }
+            }
+        }
+    )
+
+    button search (
+        buttonName: SEARCH
+        label: بحث
+        layout {
+            sequence: 20
+            region: @parts-search
+            slot: regionBody
+            columnSpan: 2
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-search
+        }
+        behavior {
+            executeValidations: false
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button show-all (
+        buttonName: SHOW_ALL
+        label: عرض الكل
+        layout {
+            sequence: 30
+            region: @parts-search
+            slot: regionBody
+            startNewRow: false
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            cssClasses: s-btn-outline
+            icon: fa-list
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 8
+                clearCache: 8
+            }
+        }
+    )
+
+)
+

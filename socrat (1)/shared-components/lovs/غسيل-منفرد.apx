@@ -1,0 +1,23 @@
+lov غسيل-منفرد (
+    name: غسيل منفرد
+    source {
+        type: sqlQuery
+        sqlQuery:
+            ```sql
+            select '#' || w.car_wash_id || ' – ' || v.plate_number || ' (' ||
+                   case w.wash_type when 'EXTERIOR' then 'خارجي' when 'INTERIOR' then 'داخلي' else 'شامل' end || ')' d,
+                   w.car_wash_id r
+              from car_wash w
+              join vehicles v on v.vehicle_id = w.vehicle_id
+             where w.job_card_id is null
+               and w.wash_status <> 'CANCELED'
+               and not exists (select 1 from invoices i where i.car_wash_id = w.car_wash_id)
+             order by w.car_wash_id desc
+            ```
+    }
+    columnMapping {
+        return: R
+        display: D
+    }
+)
+

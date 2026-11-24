@@ -1,0 +1,567 @@
+page 6 (
+    name: اضافه عملاء
+    alias: عملاء
+    title: اضافه عملاء
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @/drawer
+        templateOptions: [
+            #DEFAULT#
+            js-dialog-class-t-Drawer--pullOutEnd
+        ]
+    }
+    dialog {
+        chained: false
+    }
+
+    region buttons (
+        name: Buttons
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: dialogFooter
+        }
+        appearance {
+            template: @/buttons-container
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region customers (
+        name: اضافة عميل
+        type: form
+        source {
+            location: localDatabase
+            tableName: CUSTOMERS
+        }
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+        edit {
+            enabled: true
+            allowedOperations: [
+                add
+                update
+                delete
+            ]
+        }
+    )
+
+    pageItem P6_ADDRESS (
+        type: textField
+        label {
+            label: العنوان
+            alignment: left
+        }
+        layout {
+            sequence: 50
+            region: @customers
+            slot: regionBody
+            alignment: left
+            startNewRow: false
+            columnSpan: 4
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-map-marker
+            width: 60
+        }
+        validation {
+            maxLength: 1000
+        }
+        source {
+            formRegion: @customers
+            column: ADDRESS
+            dataType: varchar2
+        }
+    )
+
+    pageItem P6_CUSTOMER_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @customers
+            slot: regionBody
+        }
+        source {
+            formRegion: @customers
+            column: CUSTOMER_ID
+            dataType: number
+            primaryKey: true
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P6_CUSTOMER_TYPE (
+        type: selectList
+        label {
+            label: نوع العميل
+            alignment: left
+        }
+        lov {
+            type: staticValues
+            staticValues: STATIC:فردي;INDIVIDUAL,شركة;COMPANY
+        }
+        layout {
+            sequence: 60
+            region: @customers
+            slot: regionBody
+            alignment: left
+            columnSpan: 4
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-users
+            height: 1
+        }
+        validation {
+            valueRequired: true
+        }
+        source {
+            formRegion: @customers
+            column: CUSTOMER_TYPE
+            dataType: varchar2
+        }
+    )
+
+    pageItem P6_FULL_NAME (
+        type: textField
+        label {
+            label: الأسم
+            alignment: left
+        }
+        layout {
+            sequence: 20
+            region: @customers
+            slot: regionBody
+            alignment: left
+            columnSpan: 4
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-user
+            width: 60
+        }
+        validation {
+            valueRequired: true
+            maxLength: 1000
+        }
+        source {
+            formRegion: @customers
+            column: FULL_NAME
+            dataType: varchar2
+        }
+    )
+
+    pageItem P6_GENDER (
+        type: selectList
+        label {
+            label: النوع
+            alignment: left
+        }
+        lov {
+            type: staticValues
+            staticValues: STATIC:ذكر;MALE,مؤنث;FEMALE
+        }
+        layout {
+            sequence: 70
+            region: @customers
+            slot: regionBody
+            alignment: left
+            startNewRow: false
+            columnSpan: 4
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-venus-mars
+            height: 1
+        }
+        source {
+            formRegion: @customers
+            column: GENDER
+            dataType: varchar2
+        }
+    )
+
+    pageItem P6_NATIONAL_ID (
+        type: textField
+        label {
+            label: الرقم القومي
+            alignment: left
+        }
+        layout {
+            sequence: 40
+            region: @customers
+            slot: regionBody
+            alignment: left
+            columnSpan: 4
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-id-card-o
+            width: 32
+        }
+        validation {
+            maxLength: 14
+        }
+        source {
+            formRegion: @customers
+            column: NATIONAL_ID
+            dataType: varchar2
+        }
+    )
+
+    pageItem P6_PHONE (
+        type: textField
+        label {
+            label: رقم الهاتف
+            alignment: left
+        }
+        settings {
+            subtype: phone
+        }
+        layout {
+            sequence: 30
+            region: @customers
+            slot: regionBody
+            alignment: left
+            startNewRow: false
+            columnSpan: 4
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-phone
+            width: 32
+        }
+        validation {
+            maxLength: 11
+        }
+        source {
+            formRegion: @customers
+            column: PHONE
+            dataType: varchar2
+        }
+    )
+
+    button cancel (
+        buttonName: CANCEL
+        label: الغاء
+        layout {
+            sequence: 10
+            region: @buttons
+            slot: close
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-times
+        }
+        behavior {
+            action: triggerAction
+        }
+
+        triggerAction native-dialog-cancel (
+            action: cancelDialog
+            execution {
+                sequence: 10
+            }
+        )
+
+    )
+
+    button create (
+        buttonName: CREATE
+        label: حفظ
+        layout {
+            sequence: 40
+            region: @buttons
+            slot: next
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+            templateOptions: #DEFAULT#
+            icon: fa-save
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: insert
+        }
+        serverSideCondition {
+            type: itemIsNull
+            item: P6_CUSTOMER_ID
+        }
+    )
+
+    button delete (
+        buttonName: DELETE
+        label: حذف
+        layout {
+            sequence: 20
+            region: @buttons
+            slot: delete
+        }
+        appearance {
+            buttonTemplate: @/text
+            templateOptions: [
+                #DEFAULT#
+                t-Button--danger
+                t-Button--simple
+            ]
+        }
+        behavior {
+            executeValidations: false
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: delete
+            requiresConfirmation: true
+        }
+        confirmation {
+            message: &APP_TEXT$DELETE_MSG!RAW.
+            style: danger
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P6_CUSTOMER_ID
+        }
+    )
+
+    button save (
+        buttonName: SAVE
+        label: حفظ التعديلات
+        layout {
+            sequence: 30
+            region: @buttons
+            slot: next
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-save
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: update
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P6_CUSTOMER_ID
+        }
+    )
+
+    dynamicAction new (
+        name: New
+        execution {
+            sequence: 10
+        }
+        when {
+            selectionType: items
+            items: P6_CUSTOMER_TYPE
+        }
+        clientSideCondition {
+            type: item=value
+            item: P6_CUSTOMER_TYPE
+            value: COMPANY
+        }
+
+        action native-hide (
+            action: hide
+            affectedElements {
+                selectionType: items
+                items: P6_GENDER
+            }
+            execution {
+                sequence: 10
+            }
+        )
+
+        action native-show (
+            action: show
+            affectedElements {
+                selectionType: items
+                items: P6_GENDER
+            }
+            execution {
+                sequence: 10
+                fireWhenEventResultIs: false
+            }
+        )
+
+    )
+
+    validation اسم-العميل (
+        name: اسم العميل
+        execution {
+            sequence: 50
+        }
+        validation {
+            type: itemIsNotNull
+            item: P6_FULL_NAME
+        }
+        error {
+            errorMessage:
+                ```
+                اكتب اسم العميل
+                
+                ```
+            associatedItem: @P6_FULL_NAME
+        }
+    )
+
+    validation الرقم-القومي (
+        name: الرقم القومي
+        execution {
+            sequence: 30
+        }
+        validation {
+            type: itemMatchesRegexp
+            item: P6_NATIONAL_ID
+            regexp: "^[0-9]{14}$"
+        }
+        error {
+            errorMessage: الرقم القومي لازم يكون 14 رقم
+            associatedItem: @P6_NATIONAL_ID
+        }
+    )
+
+    validation تكرار-الرقم-القومي (
+        name: تكرار الرقم القومي
+        execution {
+            sequence: 40
+        }
+        validation {
+            type: noRowsReturned
+            sqlQuery:
+                ```sql
+                select 1 from customers
+                 where national_id = :P6_NATIONAL_ID
+                   and :P6_NATIONAL_ID is not null
+                   and customer_id <> nvl(:P6_CUSTOMER_ID, -1)
+                ```
+        }
+        error {
+            errorMessage: الرقم القومي ده مسجل لعميل تاني
+            associatedItem: @P6_NATIONAL_ID
+        }
+    )
+
+    validation رقم-الهاتف (
+        name: رقم الهاتف
+        execution {
+            sequence: 10
+        }
+        validation {
+            type: itemMatchesRegexp
+            item: P6_PHONE
+            regexp: "^01[0125][0-9]{8}$"
+        }
+        error {
+            errorMessage: رقم الموبايل لازم يكون 11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015
+        }
+    )
+
+    validation رقم-مكرر (
+        name: رقم مكرر
+        execution {
+            sequence: 20
+        }
+        validation {
+            type: noRowsReturned
+            sqlQuery:
+                ```sql
+                select 1 from customers
+                 where phone = :P6_PHONE
+                   and customer_id <> nvl(:P6_CUSTOMER_ID, -1)
+                ```
+        }
+        error {
+            errorMessage: الموبايل ده مسجل لعميل تاني
+            associatedItem: @P6_PHONE
+        }
+    )
+
+    process initialize-form-customers (
+        name: Initialize form Customers
+        type: formInitialization
+        formRegion: @customers
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+        advanced {
+            executionMappingIdentifier: 14829847430772344903
+        }
+    )
+
+    process process-form-customers (
+        name: Process form Customers
+        type: formAutoRowProcessing
+        formRegion: @customers
+        execution {
+            sequence: 10
+        }
+        successMessage {
+            successMessage:
+                ```
+                تم التعديل بنجاح
+                
+                
+                ```
+        }
+        advanced {
+            executionMappingIdentifier: 14829847892890344904
+        }
+    )
+
+    branch (
+        name: Redirect to new
+        execution {
+            sequence: 10
+        }
+        behavior {
+            target: {
+                page: 5
+                items: {
+                    P5_CUSTOMER_ID: &P6_CUSTOMER_ID.
+                }
+                action: resetPagination
+            }
+        }
+        serverSideCondition {
+            whenButtonPressed: @create
+        }
+    )
+
+    branch (
+        execution {
+            sequence: 10
+        }
+        behavior {
+            target: {
+                page: 5
+                action: resetPagination
+            }
+        }
+    )
+
+)
+

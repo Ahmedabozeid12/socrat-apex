@@ -1,0 +1,17 @@
+appItem AI_ALERT_COUNT (
+)
+
+appItem AI_FULL_NAME (
+)
+
+appItem AI_ROLE (
+)
+
+appItem G_CUSTOMER_ID (
+    scope: global
+)
+
+appItem G_USER_TYPE (
+    scope: global
+)
+

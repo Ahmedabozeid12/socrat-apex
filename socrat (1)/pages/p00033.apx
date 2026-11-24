@@ -1,0 +1,528 @@
+page 33 (
+    name: "اضافة سيارة "
+    title: اضافة سيارة عميل
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @/modal-dialog
+        templateOptions: #DEFAULT#
+    }
+
+    region breadcrumb (
+        name: Breadcrumb
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: dialogHeader
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region new (
+        name: New
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: dialogFooter
+        }
+        appearance {
+            template: @/search-results-container
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region اضافة-سيارة-عميل (
+        name: اضافة سيارة عميل
+        type: form
+        source {
+            location: localDatabase
+            tableName: VEHICLES
+        }
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+        edit {
+            enabled: true
+            allowedOperations: [
+                add
+                update
+                delete
+            ]
+        }
+    )
+
+    pageItem P33_COLOR (
+        type: textField
+        label {
+            label: اللون
+            alignment: left
+        }
+        layout {
+            sequence: 70
+            region: @اضافة-سيارة-عميل
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-paint-brush
+            width: 32
+        }
+        validation {
+            maxLength: 40
+        }
+        source {
+            formRegion: @اضافة-سيارة-عميل
+            column: COLOR
+            dataType: varchar2
+        }
+    )
+
+    pageItem P33_CUSTOMER_ID (
+        type: hidden
+        layout {
+            sequence: 20
+            region: @اضافة-سيارة-عميل
+            slot: regionBody
+        }
+        source {
+            formRegion: @اضافة-سيارة-عميل
+            column: CUSTOMER_ID
+            dataType: number
+        }
+    )
+
+    pageItem P33_MAKE (
+        type: selectList
+        label {
+            label: ماركة السيارة
+            alignment: left
+        }
+        lov {
+            type: staticValues
+            staticValues: STATIC:Mercedes-Benz;Mercedes-Benz,BMW;BMW,Audi;Audi,Volkswagen;Volkswagen,Porsche;Porsche,Opel;Opel,Mini;Mini
+        }
+        layout {
+            sequence: 40
+            region: @اضافة-سيارة-عميل
+            slot: regionBody
+            alignment: left
+            startNewRow: false
+        }
+        appearance {
+            template: @/required-floating
+            templateOptions: #DEFAULT#
+            icon: fa-car
+            height: 1
+        }
+        validation {
+            valueRequired: true
+        }
+        source {
+            formRegion: @اضافة-سيارة-عميل
+            column: MAKE
+            dataType: varchar2
+        }
+    )
+
+    pageItem P33_MODEL (
+        type: textField
+        label {
+            label: موديل السيارة
+            alignment: left
+        }
+        layout {
+            sequence: 50
+            region: @اضافة-سيارة-عميل
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            width: 32
+        }
+        validation {
+            maxLength: 100
+        }
+        source {
+            formRegion: @اضافة-سيارة-عميل
+            column: MODEL
+            dataType: varchar2
+        }
+    )
+
+    pageItem P33_PLATE_NUMBER (
+        type: textField
+        label {
+            label: رقم اللوحة
+            alignment: left
+        }
+        layout {
+            sequence: 30
+            region: @اضافة-سيارة-عميل
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/required-floating
+            templateOptions: #DEFAULT#
+            icon: fa-id-card-o
+            width: 32
+            valuePlaceholder: مثال: ص ر ب 1234
+        }
+        validation {
+            valueRequired: true
+            maxLength: 100
+        }
+        source {
+            formRegion: @اضافة-سيارة-عميل
+            column: PLATE_NUMBER
+            dataType: varchar2
+        }
+    )
+
+    pageItem P33_VEHICLE_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @اضافة-سيارة-عميل
+            slot: regionBody
+        }
+        source {
+            formRegion: @اضافة-سيارة-عميل
+            column: VEHICLE_ID
+            dataType: number
+            primaryKey: true
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P33_VEHICLE_SIZE (
+        type: selectList
+        label {
+            label: حجم العربية
+            alignment: left
+        }
+        lov {
+            type: staticValues
+            staticValues: STATIC:صغيرة;SMALL,كبيرة;LARGE,رياضية;SUV
+        }
+        layout {
+            sequence: 90
+            region: @اضافة-سيارة-عميل
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/required-floating
+            templateOptions: #DEFAULT#
+            height: 1
+        }
+        validation {
+            valueRequired: true
+        }
+        source {
+            formRegion: @اضافة-سيارة-عميل
+            column: VEHICLE_SIZE
+            dataType: varchar2
+        }
+    )
+
+    pageItem P33_VIN (
+        type: textField
+        label {
+            label: الشاسية
+            alignment: left
+        }
+        settings {
+            textCase: upper
+        }
+        layout {
+            sequence: 80
+            region: @اضافة-سيارة-عميل
+            slot: regionBody
+            alignment: left
+            startNewRow: false
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-barcode
+            width: 32
+            valuePlaceholder: 17 حرف/رقم – موجود في الرخصة
+        }
+        validation {
+            maxLength: 17
+        }
+        source {
+            formRegion: @اضافة-سيارة-عميل
+            column: VIN
+            dataType: varchar2
+        }
+    )
+
+    pageItem P33_YEAR (
+        type: numberField
+        label {
+            label: السنة
+            alignment: left
+        }
+        layout {
+            sequence: 60
+            region: @اضافة-سيارة-عميل
+            slot: regionBody
+            alignment: left
+            startNewRow: false
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-calendar
+            width: 32
+        }
+        validation {
+            maxLength: 255
+        }
+        source {
+            formRegion: @اضافة-سيارة-عميل
+            column: YEAR
+            dataType: number
+        }
+    )
+
+    button cancel (
+        buttonName: CANCEL
+        label: إلغاء
+        layout {
+            sequence: 10
+            region: @new
+            slot: searchResults
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-times
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 23
+            }
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button create (
+        buttonName: CREATE
+        label: حفظ
+        layout {
+            sequence: 40
+            region: @new
+            slot: searchResults
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: insert
+        }
+        serverSideCondition {
+            type: itemIsNull
+            item: P33_VEHICLE_ID
+        }
+    )
+
+    button delete (
+        buttonName: DELETE
+        label: حذف
+        layout {
+            sequence: 20
+            region: @new
+            slot: searchResults
+        }
+        appearance {
+            buttonTemplate: @/text
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            executeValidations: false
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: delete
+            requiresConfirmation: true
+        }
+        confirmation {
+            message: &APP_TEXT$DELETE_MSG!RAW.
+            style: danger
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P33_VEHICLE_ID
+        }
+    )
+
+    button save (
+        buttonName: SAVE
+        label: حفظ السيارة
+        layout {
+            sequence: 30
+            region: @new
+            slot: searchResults
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-check
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: update
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P33_VEHICLE_ID
+        }
+    )
+
+    validation new (
+        name: New
+        execution {
+            sequence: 20
+        }
+        validation {
+            plsqlExpression: ":P33_VIN_NO is null or regexp_like(:P33_VIN, '^[A-HJ-NPR-Z0-9]{17}$')"
+        }
+        error {
+            errorMessage:
+                ```
+                رقم الشاسسية خطا
+                
+                ```
+            associatedItem: @P33_VIN
+        }
+    )
+
+    validation رقم-اللوحة-ميتكررش (
+        name: رقم اللوحة ميتكررش
+        execution {
+            sequence: 10
+        }
+        validation {
+            type: noRowsReturned
+            sqlQuery:
+                ```sql
+                select 1 from vehicles
+                 where upper(replace(plate_number, ' ')) = upper(replace(:P33_PLATE_NUMBER, ' '))
+                   and vehicle_id <> nvl(:P33_VEHICLE_ID ,-1)
+                ```
+        }
+        error {
+            errorMessage:
+                ```
+                رقم اللوحة مكرر هذه العربية مسجلة بالفعل
+                
+                ```
+            associatedItem: @P33_PLATE_NUMBER
+        }
+    )
+
+    process initialize-form-اضافة-سيارة-عميل (
+        name: Initialize form اضافة سيارة عميل
+        type: formInitialization
+        formRegion: @اضافة-سيارة-عميل
+        execution {
+            sequence: 30
+            point: beforeHeader
+        }
+        advanced {
+            executionMappingIdentifier: 14912827217700743653
+        }
+    )
+
+    process process-form-اضافة-سيارة-عميل (
+        name: Process form اضافة سيارة عميل
+        type: formAutoRowProcessing
+        formRegion: @اضافة-سيارة-عميل
+        execution {
+            sequence: 10
+        }
+        successMessage {
+            successMessage: تمت أضافة سيارتك بنجاح
+        }
+        advanced {
+            executionMappingIdentifier: 14912827699453743654
+        }
+    )
+
+    process vehicle-customer (
+        name: vehicle_customer
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                BEGIN
+                    IF :G_USER_TYPE <> 'CUSTOMER'
+                       OR :G_CUSTOMER_ID IS NULL
+                    THEN
+                        RAISE_APPLICATION_ERROR(
+                            -20001,
+                            'Customer session is invalid.'
+                        );
+                    END IF;
+                
+                    :P33_CUSTOMER_ID:= TO_NUMBER(:G_CUSTOMER_ID);
+                END;
+                ```
+        }
+        execution {
+            sequence: 20
+            point: beforeHeader
+        }
+        advanced {
+            executionMappingIdentifier: 14912133571948701704
+        }
+    )
+
+    branch (
+        execution {
+            sequence: 1
+        }
+        behavior {
+            target: {
+                page: 23
+            }
+        }
+    )
+
+)
+

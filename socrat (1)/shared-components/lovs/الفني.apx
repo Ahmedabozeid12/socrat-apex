@@ -1,0 +1,12 @@
+lov الفني (
+    name: الفني
+    source {
+        type: sqlQuery
+        sqlQuery: select full_name d, technician_id r from technicians where is_active = 'Y' order by full_name
+    }
+    columnMapping {
+        return: R
+        display: D
+    }
+)
+

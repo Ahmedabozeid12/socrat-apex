@@ -1,0 +1,635 @@
+page 40 (
+    name: إدارة حجوزات العملاء
+    alias: إدارة-حجوزات-العملاء
+    title: إدارة حجوزات العملاء
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+
+    region breadcrumb (
+        name: Breadcrumb
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region إدارة-حجوزات-العملاء (
+        name: إدارة حجوزات العملاء
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                SELECT
+                    A.APPOINTMENT_ID,
+                    C.FULL_NAME,
+                    C.PHONE,
+                    V.PLATE_NUMBER,
+                    V.MAKE || ' ' || V.MODEL AS VEHICLE_NAME,
+                
+                    TO_CHAR(
+                        S.START_AT,
+                        'FMDay DD FMMonth YYYY',
+                        'NLS_DATE_LANGUAGE=ARABIC'
+                    ) AS APPOINTMENT_DATE,
+                
+                    TO_CHAR(S.START_AT, 'HH:MI AM')
+                    || CASE
+                        WHEN TO_CHAR(S.START_AT, 'HH24') < '12'
+                        THEN ' صباحًا'
+                        ELSE ' مساءً'
+                    END AS APPOINTMENT_TIME,
+                
+                    A.CUSTOMER_NOTES,
+                    A.STATUS,
+                CASE
+                    WHEN A.STATUS = 'PENDING' THEN
+                        '<a href="javascript:void(0)"
+                            class="confirm-appointment"
+                            data-id="' || A.APPOINTMENT_ID || '">
+                            تأكيد الحجز
+                        </a>'
+                END AS CONFIRM_ACTION,
+                
+                CASE
+                    WHEN A.STATUS IN ('PENDING', 'CONFIRMED') THEN
+                        '<a href="javascript:void(0)"
+                            class="cancel-appointment"
+                            data-id="' || A.APPOINTMENT_ID || '">
+                            إلغاء الحجز
+                        </a>'
+                END AS CANCEL_ACTION
+                
+                FROM APPOINTMENTS A,
+                     CUSTOMERS C,
+                     VEHICLES V,
+                     APPOINTMENT_SLOTS S
+                
+                WHERE A.CUSTOMER_ID = C.CUSTOMER_ID
+                  AND A.VEHICLE_ID = V.VEHICLE_ID
+                  AND A.SLOT_ID = S.SLOT_ID
+                
+                ORDER BY S.START_AT DESC;
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/interactive-report
+            templateOptions: [
+                #DEFAULT#
+                t-IRR-region--hideHeader js-addHiddenHeadingRoleDesc
+            ]
+        }
+        pagination {
+            type: rowRangesXToY
+        }
+        messages {
+            whenNoDataFound: No data found.
+            whenMoreDataFound: The maximum row count for this report is #MAX_ROW_COUNT# rows.  Please apply a filter to reduce the number of records in your query.
+        }
+        searchBar {
+            includeSearchBar: false
+        }
+        advanced {
+            savedReportMappingIdentifier: 14931148421748171770
+        }
+
+        column APPOINTMENT_DATE (
+            type: plainText
+            heading {
+                heading: تاريخ الحجز
+            }
+            layout {
+                sequence: 6
+            }
+            source {
+                dataType: varchar2
+            }
+            advanced {
+                endUserAlias: F
+            }
+        )
+
+        column APPOINTMENT_ID (
+            type: hidden
+            heading {
+                heading: Appointment Id
+            }
+            layout {
+                sequence: 1
+            }
+            source {
+                dataType: number
+            }
+            advanced {
+                endUserAlias: A
+            }
+        )
+
+        column APPOINTMENT_TIME (
+            type: plainText
+            heading {
+                heading: ساعة الحجز
+            }
+            layout {
+                sequence: 7
+            }
+            source {
+                dataType: varchar2
+            }
+            advanced {
+                endUserAlias: G
+            }
+        )
+
+        column CANCEL_ACTION (
+            type: plainText
+            heading {
+                heading: الغاء الجحز
+            }
+            layout {
+                sequence: 39
+            }
+            source {
+                dataType: varchar2
+            }
+            advanced {
+                endUserAlias: L
+            }
+            security {
+                escapeSpecialChars: false
+            }
+        )
+
+        column CONFIRM_ACTION (
+            type: plainText
+            heading {
+                heading: تاكيد الحجز
+            }
+            layout {
+                sequence: 29
+            }
+            source {
+                dataType: varchar2
+            }
+            advanced {
+                endUserAlias: K
+            }
+            security {
+                escapeSpecialChars: false
+            }
+        )
+
+        column CUSTOMER_NOTES (
+            type: plainText
+            heading {
+                heading: الشكوي
+            }
+            layout {
+                sequence: 8
+            }
+            source {
+                dataType: varchar2
+            }
+            advanced {
+                endUserAlias: H
+            }
+        )
+
+        column FULL_NAME (
+            type: plainText
+            heading {
+                heading: الاسم كامل
+            }
+            layout {
+                sequence: 2
+            }
+            source {
+                dataType: varchar2
+            }
+            advanced {
+                endUserAlias: B
+            }
+        )
+
+        column PHONE (
+            type: plainText
+            heading {
+                heading: رقم الهاتف
+            }
+            layout {
+                sequence: 3
+            }
+            source {
+                dataType: varchar2
+            }
+            advanced {
+                endUserAlias: C
+            }
+        )
+
+        column PLATE_NUMBER (
+            type: plainText
+            heading {
+                heading: رقم اللوحة
+            }
+            layout {
+                sequence: 4
+            }
+            source {
+                dataType: varchar2
+            }
+            advanced {
+                endUserAlias: D
+            }
+        )
+
+        column STATUS (
+            type: plainText
+            heading {
+                heading: الحالة
+            }
+            layout {
+                sequence: 19
+            }
+            source {
+                dataType: varchar2
+            }
+            advanced {
+                endUserAlias: J
+            }
+        )
+
+        column VEHICLE_NAME (
+            type: plainText
+            heading {
+                heading: السيارة
+            }
+            layout {
+                sequence: 5
+            }
+            source {
+                dataType: varchar2
+            }
+            advanced {
+                endUserAlias: E
+            }
+        )
+
+        savedReport primary (
+            visibility: primaryDefault
+            view {
+                rowsPerPage: 50
+            }
+
+            displayColumn APPOINTMENT_DATE (
+                sequence: 6
+            )
+
+            displayColumn APPOINTMENT_ID (
+                sequence: 1
+            )
+
+            displayColumn APPOINTMENT_TIME (
+                sequence: 7
+            )
+
+            displayColumn CANCEL_ACTION (
+                sequence: 11
+            )
+
+            displayColumn CONFIRM_ACTION (
+                sequence: 10
+            )
+
+            displayColumn CUSTOMER_NOTES (
+                sequence: 8
+            )
+
+            displayColumn FULL_NAME (
+                sequence: 2
+            )
+
+            displayColumn PHONE (
+                sequence: 3
+            )
+
+            displayColumn PLATE_NUMBER (
+                sequence: 4
+            )
+
+            displayColumn STATUS (
+                sequence: 9
+            )
+
+            displayColumn VEHICLE_NAME (
+                sequence: 5
+            )
+
+        )
+
+    )
+
+    pageItem P40_APPOINTMENT_ID (
+        type: hidden
+        layout {
+            sequence: 20
+            slot: body
+        }
+    )
+
+    dynamicAction الغاء (
+        name: الغاء
+        execution {
+            sequence: 20
+        }
+        when {
+            event: click
+            selectionType: jQuerySelector
+            jquerySelector: .cancel-appointment
+        }
+
+        action native-javascript-code (
+            action: executeJsCode
+            settings {
+                jsCode:
+                    ```javascript-browser
+                    var appointmentId = this.triggeringElement.dataset.id;
+                    
+                    apex.message.confirm(
+                        "هل أنت متأكد من إلغاء هذا الحجز؟",
+                        function (okPressed) {
+                    
+                            if (!okPressed) {
+                                return;
+                            }
+                    
+                            apex.server.process(
+                                "CANCEL_APPOINTMENT_AJAX",
+                                {
+                                    x01: appointmentId
+                                },
+                                {
+                                    dataType: "json",
+                                    success: function (data) {
+                                        if (data.success) {
+                                            apex.message.showPageSuccess(data.message);
+                                            apex.region("APPOINTMENTS_REPORT").refresh();
+                                        } else {
+                                            apex.message.alert(data.message);
+                                        }
+                                    },
+                                    error: function () {
+                                        apex.message.alert("حدث خطأ أثناء إلغاء الحجز.");
+                                    }
+                                }
+                            );
+                        }
+                    );
+                    ```
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+    dynamicAction تاكيد (
+        name: تاكيد
+        execution {
+            sequence: 10
+        }
+        when {
+            event: click
+            selectionType: jQuerySelector
+            jquerySelector: .confirm-appointment
+        }
+
+        action native-javascript-code (
+            action: executeJsCode
+            settings {
+                jsCode:
+                    ```javascript-browser
+                    var appointmentId = this.triggeringElement.dataset.id;
+                    
+                    apex.server.process(
+                        "CONFIRM_APPOINTMENT_AJAX",
+                        {
+                            x01: appointmentId
+                        },
+                        {
+                            dataType: "json",
+                            success: function (data) {
+                                if (data.success) {
+                                    apex.message.showPageSuccess(data.message);
+                                    apex.region("APPOINTMENTS_REPORT").refresh();
+                                } else {
+                                    apex.message.alert(data.message);
+                                }
+                            },
+                           error: function (jqXHR, textStatus, errorThrown) {
+                        console.log("AJAX Status:", textStatus);
+                        console.log("Error:", errorThrown);
+                        console.log("Response:", jqXHR.responseText);
+                    
+                        apex.message.alert(
+                            "حدث خطأ: " + textStatus +
+                            "\nالتفاصيل: " + errorThrown +
+                            "\nResponse: " + jqXHR.responseText
+                        );
+                    }
+                        }
+                    );
+                    
+                    
+                    
+                    
+                    ```
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+    process الغاء-الحجز (
+        name: الغاء الحجز
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                UPDATE APPOINTMENTS
+                SET STATUS = 'CANCELLED'
+                WHERE APPOINTMENT_ID = :P40_APPOINTMENT_ID
+                  AND STATUS IN ('PENDING', 'CONFIRMED');
+                
+                IF SQL%ROWCOUNT = 0 THEN
+                    RAISE_APPLICATION_ERROR(
+                        -20002,
+                        'Appointment cannot be cancelled.'
+                    );
+                END IF;
+                ```
+        }
+        execution {
+            sequence: 20
+        }
+        advanced {
+            executionMappingIdentifier: 14912135192367701720
+        }
+    )
+
+    process الغاء-الحجز_1 (
+        name: CANCEL_APPOINTMENT_AJAX
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                DECLARE
+                    L_ID NUMBER;
+                BEGIN
+                    L_ID := TO_NUMBER(APEX_APPLICATION.G_X01);
+                
+                    UPDATE APPOINTMENTS
+                    SET STATUS = 'CANCELLED'
+                    WHERE APPOINTMENT_ID = L_ID
+                      AND STATUS IN ('PENDING', 'CONFIRMED');
+                
+                    IF SQL%ROWCOUNT = 0 THEN
+                        RAISE_APPLICATION_ERROR(
+                            -20002,
+                            'Appointment cannot be cancelled.'
+                        );
+                    END IF;
+                
+                    COMMIT;
+                
+                    APEX_JSON.OPEN_OBJECT;
+                    APEX_JSON.WRITE('success', TRUE);
+                    APEX_JSON.WRITE('message', 'تم إلغاء الحجز بنجاح');
+                    APEX_JSON.CLOSE_OBJECT;
+                
+                EXCEPTION
+                    WHEN OTHERS THEN
+                        ROLLBACK;
+                        APEX_JSON.OPEN_OBJECT;
+                        APEX_JSON.WRITE('success', FALSE);
+                        APEX_JSON.WRITE('message', SQLERRM);
+                        APEX_JSON.CLOSE_OBJECT;
+                END;
+                ```
+        }
+        execution {
+            sequence: 20
+            point: ajaxCallback
+        }
+        advanced {
+            executionMappingIdentifier: 14912136305585701732
+        }
+    )
+
+    process تاكيد-الحجز (
+        name: تاكيد الحجز
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                UPDATE APPOINTMENTS
+                SET STATUS = 'CONFIRMED'
+                WHERE APPOINTMENT_ID = :P40_APPOINTMENT_ID
+                  AND STATUS = 'PENDING';
+                
+                IF SQL%ROWCOUNT = 0 THEN
+                    RAISE_APPLICATION_ERROR(
+                        -20001,
+                        'Appointment cannot be confirmed.'
+                    );
+                END IF;
+                ```
+        }
+        execution {
+            sequence: 10
+        }
+        advanced {
+            executionMappingIdentifier: 14912134937687701718
+        }
+    )
+
+    process تاكيد-الحجز_1 (
+        name: CONFIRM_APPOINTMENT_AJAX
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                DECLARE
+                    L_ID NUMBER;
+                BEGIN
+                    IF NVL(V('G_USER_TYPE'), 'CUSTOMER') <> 'EMPLOYEE' THEN
+                        RAISE_APPLICATION_ERROR(-20003, 'Not authorized.');
+                    END IF;
+                
+                    L_ID := TO_NUMBER(APEX_APPLICATION.G_X01);
+                
+                    UPDATE APPOINTMENTS
+                    SET STATUS = 'CONFIRMED'
+                    WHERE APPOINTMENT_ID = L_ID
+                      AND STATUS = 'PENDING';
+                
+                    IF SQL%ROWCOUNT = 0 THEN
+                        RAISE_APPLICATION_ERROR(
+                            -20001,
+                            'Appointment cannot be confirmed.'
+                        );
+                    END IF;
+                
+                    APEX_JSON.OPEN_OBJECT;
+                    APEX_JSON.WRITE('success', TRUE);
+                    APEX_JSON.WRITE('message', 'تم تأكيد الحجز بنجاح');
+                    APEX_JSON.CLOSE_OBJECT;
+                
+                EXCEPTION
+                    WHEN OTHERS THEN
+                        ROLLBACK;
+                        APEX_JSON.OPEN_OBJECT;
+                        APEX_JSON.WRITE('success', FALSE);
+                        APEX_JSON.WRITE('message', SQLERRM);
+                        APEX_JSON.CLOSE_OBJECT;
+                END;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: ajaxCallback
+        }
+        advanced {
+            executionMappingIdentifier: 14912136227913701731
+        }
+    )
+
+)
+

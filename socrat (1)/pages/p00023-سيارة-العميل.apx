@@ -1,0 +1,215 @@
+page 23 (
+    name: سيارة العميل
+    alias: سيارة-العميل
+    title: سيارة العميل
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    css {
+        inline:
+            ```css
+            .s-plate{
+              display:inline-flex;flex-direction:column;min-width:120px;
+              border:2px solid #222;border-radius:6px;overflow:hidden;
+              background:#fff;color:#111;text-align:center;font-weight:800;
+            }
+            .s-plate-top{
+              display:flex;justify-content:space-between;
+              padding:1px 8px;font-size:10px;
+              background:#4aa3df;color:#fff;
+            }
+            .s-plate-num{padding:4px 10px;font-size:16px;letter-spacing:3px}
+            .s-car-info{
+              display:grid;
+              grid-template-columns:repeat(3, 1fr);
+              gap:8px;
+            }
+            .s-car-info > div{
+              display:flex;
+              flex-direction:column;
+              align-items:center;
+              gap:3px;
+              padding:10px 6px;
+              border-radius:10px;
+              text-align:center;
+              background:rgba(245,166,35,.08);
+              border:1px solid rgba(245,166,35,.22);
+            }
+            .s-car-info .fa{color:#F5A623;font-size:16px}
+            .s-car-info small{font-size:11px;opacity:.65}
+            .s-car-info b{font-size:14px;font-weight:700}
+            ```
+    }
+
+    region breadcrumb (
+        name: Breadcrumb
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region سيارة-العميل (
+        name: سيارة العميل
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select v.vehicle_id,
+                       v.make || ' ' || v.model          as title,
+                       v.plate_number,
+                       v.year                            as model_year,
+                       nvl(v.COLOR, 'غير محدد')          as color,
+                       case v.vehicle_size
+                         when 'SMALL' then 'صغيرة'
+                         when 'LARGE' then 'كبيرة'
+                         when 'SUV'   then 'دفع رباعي'
+                         else v.vehicle_size
+                       end                               as size_label
+                  from vehicles v
+                 where v.customer_id = to_number(:G_CUSTOMER_ID)
+                 order by v.vehicle_id desc
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/cards-container
+            templateOptions: [
+                #DEFAULT#
+                t-CardsRegion--hideHeader js-addHiddenHeadingRoleDesc
+            ]
+            icon: fa-car
+        }
+        componentAppearance {
+            gridColumns: 3
+        }
+        title {
+            column: TITLE
+        }
+        subtitle {
+            advancedFormatting: true
+            htmlExpression:
+                ```html
+                <span class="s-plate">
+                  <span class="s-plate-top"><span>مصر</span><span>EGYPT</span></span>
+                  <span class="s-plate-num">&PLATE_NUMBER.</span>
+                </span>
+                ```
+        }
+        body {
+            advancedFormatting: true
+            htmlExpression:
+                ```html
+                <div class="s-car-info">
+                  <div>
+                    <span class="fa fa-calendar" aria-hidden="true"></span>
+                    <small>سنة الصنع</small>
+                    <b>&MODEL_YEAR.</b>
+                  </div>
+                  <div>
+                    <span class="fa fa-arrows-h" aria-hidden="true"></span>
+                    <small>الحجم</small>
+                    <b>&SIZE_LABEL.</b>
+                  </div>
+                  <div>
+                    <span class="fa fa-paint-brush" aria-hidden="true"></span>
+                    <small>اللون</small>
+                    <b>&COLOR.</b>
+                  </div>
+                </div>
+                ```
+        }
+        iconAndBadge {
+            iconSource: iconClass
+            iconCssClasses: fa-car
+        }
+        messages {
+            whenNoDataFound: لسه ماضفتش أي عربية. اضغط "إضافة سيارة" عشان تبدأ.
+        }
+
+        action action (
+            label: احجز موعد
+            layout {
+                sequence: 10
+            }
+            behavior {
+                target: {
+                    page: 37
+                    items: {
+                        P37_VEHICLE_ID: &VEHICLE_ID.
+                    }
+                    clearCache: 37
+                }
+            }
+            appearance {
+                displayType: textWithIcon
+                icon: fa-calendar-plus-o
+                hot: true
+            }
+        )
+
+        action action_1 (
+            label: تعديل
+            layout {
+                position: secondary
+                sequence: 20
+            }
+            behavior {
+                target: {
+                    page: 33
+                    items: {
+                        P33_VEHICLE_ID: &VEHICLE_ID.
+                    }
+                }
+            }
+        )
+
+    )
+
+    button add-vechical (
+        buttonName: add_vechical
+        label: اضف سيارتك+
+        layout {
+            sequence: 10
+            region: @breadcrumb
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 33
+                clearCache: 33
+            }
+        }
+    )
+
+)
+

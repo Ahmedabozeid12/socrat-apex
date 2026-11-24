@@ -1,0 +1,19 @@
+lov الكارت (
+    name: الكارت
+    source {
+        type: sqlQuery
+        sqlQuery:
+            ```sql
+            select '#' || job_card_id || ' – ' || customer_complaint d, job_card_id r
+              from job_cards
+             where vehicle_id = :P34_VEHICLE_ID
+               and status_id not in (7, 8)
+             order by job_card_id desc
+            ```
+    }
+    columnMapping {
+        return: R
+        display: D
+    }
+)
+

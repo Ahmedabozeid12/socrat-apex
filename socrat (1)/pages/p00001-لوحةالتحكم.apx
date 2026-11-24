@@ -1,0 +1,502 @@
+page 1 (
+    name: لوحةالتحكم
+    alias: لوحةالتحكم
+    title: لوحةالتحكم
+    pageGroup: @administration
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    css {
+        inline:
+            ```css
+            /* كروت المؤشرات */
+            .t-Cards-item{border-radius:14px;border:1px solid rgba(128,128,128,.28);box-shadow:none}
+            .t-Cards-title{font-size:13px;opacity:.8}
+            .t-Cards-subTitle{font-size:12px;opacity:.6}
+            .t-Cards-body{font-size:28px;font-weight:700;padding-top:8px}
+            
+            /* تقارير الكلاسيك: شيل الخطوط الزيادة */
+            .t-Report-report td{border:0;border-bottom:1px solid rgba(128,128,128,.18);padding:10px 12px}
+            .t-Report-report th{border:0;font-weight:600;opacity:.75;text-align:right}
+            .t-Report-report tr:hover td{background:rgba(255,167,38,.06)}
+            
+            /* الـ Regions كروت مسطّحة */
+            .t-Region{border-radius:14px;border:1px solid rgba(128,128,128,.28);box-shadow:none}
+            .t-Region-header{border:0}
+            .s-kpi-value{font-size:28px;font-weight:800;color:#F5A623;line-height:1.2}
+            ```
+    }
+
+    region cards (
+        name: Cards
+        title: المؤشرات
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                with k as (
+                  select (select nvl(sum(total_amount), 0) from invoices
+                           where invoice_date >= trunc(sysdate)
+                             and invoice_date <  trunc(sysdate) + 1)                       as rev_today,
+                         (select nvl(sum(total_amount), 0) from invoices
+                           where invoice_date >= trunc(sysdate, 'MM'))                     as rev_month,
+                         (select nvl(sum(greatest(i.total_amount
+                                   - nvl((select sum(p.amount) from payments p
+                                           where p.invoice_id = i.invoice_id), 0), 0)), 0)
+                            from invoices i)                                               as due,
+                         (select count(*) from job_cards where status_id not in (7, 8))    as open_jobs,
+                         (select count(*) from job_cards
+                           where expected_delivery_date < trunc(sysdate)
+                             and status_id not in (7, 8))                                  as late_jobs,
+                         (select nvl(sum(quantity_on_hand * unit_cost), 0) from parts)     as stock_value,
+                         (select count(*) from parts where quantity_on_hand < reorder_level) as low_parts
+                    from dual
+                )
+                select 1 as sn, 'إيراد اليوم' as card_title,
+                       to_char(rev_today, 'FM999G999G990') || ' ج.م' as card_value,
+                       'من فواتير النهارده' as card_sub,
+                       null as sub_class, 'fa fa-money' as card_icon
+                  from k
+                union all
+                select 2, 'إيراد الشهر',
+                       to_char(rev_month, 'FM999G999G990') || ' ج.م',
+                       'من أول الشهر',
+                       null, 'fa fa-line-chart'
+                  from k
+                union all
+                select 3, 'المبالغ المستحقة',
+                       to_char(due, 'FM999G999G990') || ' ج.م',
+                       'فواتير لسه ماتسددتش',
+                       case when due > 0 then 'st-badge st-wait' end, 'fa fa-file-text-o'
+                  from k
+                union all
+                select 4, 'أوامر الشغل المفتوحة',
+                       to_char(open_jobs),
+                       late_jobs || ' تجاوزت موعد التسليم',
+                       case when late_jobs > 0 then 'st-badge st-late' end, 'fa fa-wrench'
+                  from k
+                union all
+                select 5, 'قيمة المخزون',
+                       to_char(stock_value, 'FM999G999G990') || ' ج.م',
+                       low_parts || ' أصناف تحت الحد الأدنى',
+                         case when low_parts > 0 then 'st-badge st-late' end, 'fa fa-cubes'
+                  from k
+                order by sn
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/cards-container
+            templateOptions: [
+                #DEFAULT#
+                t-CardsRegion--hideHeader js-addHiddenHeadingRoleDesc
+            ]
+        }
+        componentAppearance {
+            gridColumns: 5
+            cssClasses: s-kpi
+        }
+        title {
+            column: CARD_TITLE
+        }
+        subtitle {
+            advancedFormatting: true
+            htmlExpression: <span class="&SUB_CLASS.">&CARD_SUB.</span>
+        }
+        body {
+            advancedFormatting: true
+            htmlExpression: <div class="s-kpi-value">&CARD_VALUE.</div>
+        }
+        iconAndBadge {
+            iconSource: iconClassColumn
+            iconColumn: CARD_ICON
+        }
+    )
+
+    region charts (
+        name: charts
+        title: الإيراد خلال 30 يوم
+        type: chart
+        layout {
+            sequence: 20
+            slot: body
+            columnSpan: 8
+        }
+        appearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+        }
+        chart {
+            type: area
+        }
+        title {
+            title: الإيراد خلال 30 يوم
+        }
+        chartLayout {
+            height: 400
+        }
+        legend {
+            show: false
+        }
+
+        series new_1 (
+            name: الأيراد
+            execution {
+                sequence: 10
+            }
+            source {
+                type: sqlQuery
+                sqlQuery:
+                    ```sql
+                    select to_char(d.day, 'DD/MM') as day_label,
+                           nvl(sum(i.total_amount), 0) as revenue
+                      from (select trunc(sysdate) - 29 + level - 1 as day
+                              from dual connect by level <= 30) d
+                      left join invoices i on trunc(i.invoice_date) = d.day
+                     group by d.day
+                     order by d.day
+                    ```
+            }
+            columnMapping {
+                label: DAY_LABEL
+                value: REVENUE
+            }
+            appearance {
+                color: #f5a623
+            }
+        )
+
+        axis x (
+            name: x
+        )
+
+        axis y (
+            name: y
+            value {
+                format: decimal
+                decimalPlaces: 0
+                formatScaling: none
+            }
+        )
+
+    )
+
+    region new (
+        name: New
+        title: الكروت حسب الحالة
+        type: chart
+        layout {
+            sequence: 30
+            slot: body
+            startNewRow: false
+            columnSpan: 4
+        }
+        appearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+        }
+        chart {
+            type: donut
+        }
+        chartLayout {
+            height: 400
+        }
+        value {
+            format: decimal
+            decimalPlaces: 0
+            formatScaling: none
+        }
+        legend {
+            fontColor: #000000
+        }
+
+        series new_1 (
+            name: New
+            execution {
+                sequence: 10
+            }
+            source {
+                type: sqlQuery
+                sqlQuery:
+                    ```sql
+                    select st.status_name_ar as status_label,
+                           count(c.job_card_id) as cnt
+                      from job_status st
+                      left join job_cards c on c.status_id = st.status_id
+                     group by st.status_name_ar, st.status_order
+                    having count(c.job_card_id) > 0
+                     order by st.status_order
+                    ```
+            }
+            columnMapping {
+                label: STATUS_LABEL
+                value: CNT
+            }
+        )
+
+    )
+
+    region أصناف-تحت-الحد-الأدنى (
+        name: أصناف تحت الحد الأدنى
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select part_code,
+                       part_name,
+                       quantity_on_hand,
+                       reorder_level,
+                       '<span class="st-badge ' ||
+                         case when quantity_on_hand < reorder_level / 2 then 'st-late' else 'st-wait' end ||
+                       '">باقي ' || quantity_on_hand || '</span>' as remaining
+                  from parts
+                 where quantity_on_hand < reorder_level
+                 order by quantity_on_hand
+                ```
+        }
+        layout {
+            sequence: 50
+            slot: body
+            startNewRow: false
+            columnSpan: 6
+        }
+        appearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--altRowsDefault
+                t-Report--rowHighlight
+            ]
+        }
+        messages {
+            whenNoDataFound: كل الأصناف فوق الحد الأدنى 👍
+        }
+
+        column PART_CODE (
+            reportColumnQueryId: 1
+            derivedColumn: N
+            heading {
+                heading: الكود
+                alignment: end
+            }
+            layout {
+                sequence: 10
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column PART_NAME (
+            reportColumnQueryId: 2
+            derivedColumn: N
+            heading {
+                heading: الصنف
+                alignment: end
+            }
+            layout {
+                sequence: 20
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column QUANTITY_ON_HAND (
+            reportColumnQueryId: 3
+            derivedColumn: N
+            heading {
+                heading: الكمية
+                alignment: end
+            }
+            layout {
+                sequence: 30
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column REMAINING (
+            reportColumnQueryId: 5
+            derivedColumn: N
+            heading {
+                heading: المتبقي
+                alignment: end
+            }
+            layout {
+                sequence: 50
+            }
+            sorting {
+                sortable: false
+            }
+            security {
+                escapeSpecialChars: false
+            }
+        )
+
+        column REORDER_LEVEL (
+            reportColumnQueryId: 4
+            derivedColumn: N
+            heading {
+                heading: الحد الأدنى
+                alignment: end
+            }
+            layout {
+                sequence: 40
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+    )
+
+    region كروت-تجاوزت-موعد-التسليم (
+        name: كروت تجاوزت موعد التسليم
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select c.job_card_id,
+                       cu.full_name as customer_name,
+                       v.make || ' ' || v.model as vehicle,
+                       to_char(c.expected_delivery_date, 'DD/MM/YYYY') as due_date,
+                       '<span class="st-badge st-late">متأخر ' || (trunc(sysdate) - trunc(c.expected_delivery_date)) || ' يوم</span>' as late_by
+                  from job_cards c
+                  join vehicles v   on v.vehicle_id = c.vehicle_id
+                  join customers cu on cu.customer_id = v.customer_id
+                 where c.expected_delivery_date < trunc(sysdate)
+                   and c.status_id not in (7, 8)
+                 order by c.expected_delivery_date
+                ```
+        }
+        layout {
+            sequence: 40
+            slot: body
+            columnSpan: 6
+        }
+        appearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--altRowsDefault
+                t-Report--rowHighlight
+            ]
+        }
+        messages {
+            whenNoDataFound: مفيش كروت متأخرة 👍.
+        }
+
+        column CUSTOMER_NAME (
+            reportColumnQueryId: 2
+            derivedColumn: N
+            heading {
+                heading: العميل
+                alignment: end
+            }
+            layout {
+                sequence: 20
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column DUE_DATE (
+            reportColumnQueryId: 4
+            derivedColumn: N
+            heading {
+                heading: موعد التسليم
+                alignment: end
+            }
+            layout {
+                sequence: 40
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column JOB_CARD_ID (
+            reportColumnQueryId: 1
+            derivedColumn: N
+            heading {
+                heading: رقم الكارت
+                alignment: end
+            }
+            layout {
+                sequence: 10
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column LATE_BY (
+            reportColumnQueryId: 5
+            derivedColumn: N
+            heading {
+                heading: التأخير
+                alignment: end
+            }
+            layout {
+                sequence: 50
+            }
+            sorting {
+                sortable: false
+            }
+            security {
+                escapeSpecialChars: false
+            }
+        )
+
+        column VEHICLE (
+            reportColumnQueryId: 3
+            derivedColumn: N
+            heading {
+                heading: السيارة
+                alignment: end
+            }
+            layout {
+                sequence: 30
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+    )
+
+)
+

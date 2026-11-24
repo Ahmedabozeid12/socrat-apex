@@ -1,0 +1,27 @@
+lov job-status-status-name (
+    name: JOB_STATUS.STATUS_NAME
+    source {
+        type: sqlQuery
+        sqlQuery:
+            ```sql
+            select case status_name
+                     when 'NEW'              then 'جديد'
+                     when 'UNDER_INSPECTION' then 'تحت الفحص'
+                     when 'WAITING_APPROVAL' then 'بانتظار الموافقة'
+                     when 'IN_PROGRESS'      then 'قيد التنفيذ'
+                     when 'IN_WASH'          then 'في المغسلة'
+                     when 'READY'            then 'جاهز'
+                     when 'DELIVERED'        then 'تم التسليم'
+                     when 'CANCELED'         then 'ملغي'
+                   end as d,
+                   status_id as r
+            from job_status
+            order by status_order
+            ```
+    }
+    columnMapping {
+        return: R
+        display: D
+    }
+)
+

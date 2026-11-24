@@ -1,0 +1,326 @@
+page 29 (
+    name: تسجيل دفعة
+    alias: تسجيل-دفعة
+    title: تسجيل دفعة
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @/modal-dialog
+        templateOptions: #DEFAULT#
+    }
+
+    region new (
+        name: New
+        type: staticContent
+        layout {
+            sequence: 10
+            slot: dialogFooter
+        }
+        appearance {
+            template: @/buttons-container
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    pageItem P29_AMOUNT (
+        type: numberField
+        label {
+            label: المبلغ
+            alignment: left
+        }
+        settings {
+            minValue: 0.01
+        }
+        layout {
+            sequence: 60
+            slot: contentBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-money
+            formatMask: 999G999G990D00
+            width: 30
+        }
+        source {
+            type: sqlQuerySingleValue
+            sqlQuery: select pkg_payment.remaining_amount(:P29_INVOICE_ID) from dual
+        }
+        help {
+            inlineHelpText: اكتب مبلغ أقل لو العميل هيدفع جزء بس
+        }
+    )
+
+    pageItem P29_INVOICE_ID (
+        type: hidden
+        settings {
+            valueProtected: false
+        }
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+    )
+
+    pageItem P29_NOTES (
+        type: textarea
+        label {
+            label: ملاحظة
+            alignment: left
+        }
+        layout {
+            sequence: 80
+            slot: contentBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            width: 30
+            height: 2
+        }
+    )
+
+    pageItem P29_PAID (
+        type: displayOnly
+        label {
+            label: المدفوع
+            alignment: left
+        }
+        settings {
+            sendOnPageSubmit: false
+        }
+        layout {
+            sequence: 30
+            slot: contentBody
+            alignment: left
+            startNewRow: false
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-check-circle
+            formatMask: 999G999G990D00
+        }
+        source {
+            type: sqlQuerySingleValue
+            sqlQuery: select pkg_payment.paid_amount(:P29_INVOICE_ID) from dual
+            used: always
+        }
+    )
+
+    pageItem P29_PAYMENT_METHOD_ID (
+        type: radioGroup
+        label {
+            label: طريقة الدفع
+            alignment: left
+        }
+        settings {
+            noOfCols: 4
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery: select method_name_ar d, payment_method_id r from payment_methods order by payment_method_id
+            displayExtraValues: false
+            displayNullValue: false
+        }
+        layout {
+            sequence: 50
+            slot: contentBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: [
+                #DEFAULT#
+                t-Form-fieldContainer--radioButtonGroup
+            ]
+        }
+    )
+
+    pageItem P29_REMAINING (
+        type: displayOnly
+        label {
+            label: المتبقي
+            alignment: left
+        }
+        settings {
+            sendOnPageSubmit: false
+        }
+        layout {
+            sequence: 40
+            slot: contentBody
+            alignment: left
+            startNewRow: false
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-hourglass-half
+            formatMask: 999G999G990D00
+        }
+        source {
+            type: sqlQuerySingleValue
+            sqlQuery: select pkg_payment.remaining_amount(:P29_INVOICE_ID) from dual
+            used: always
+        }
+    )
+
+    pageItem P29_TOTAL (
+        type: displayOnly
+        label {
+            label: إجمالي الفاتورة
+            alignment: left
+        }
+        settings {
+            sendOnPageSubmit: false
+        }
+        layout {
+            sequence: 20
+            slot: contentBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-file-text-o
+        }
+        source {
+            type: sqlQuerySingleValue
+            sqlQuery: select total_amount from invoices where invoice_id = :P29_INVOICE_ID
+            used: always
+        }
+    )
+
+    button cancel (
+        buttonName: CANCEL
+        label: الغاء
+        layout {
+            sequence: 20
+            region: @new
+            slot: regionBody
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-times
+        }
+        behavior {
+            action: definedByDynamicAction
+        }
+    )
+
+    button pay (
+        buttonName: PAY
+        label: تسجيل الدفعة
+        layout {
+            sequence: 10
+            region: @new
+            slot: regionBody
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-check
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    dynamicAction new (
+        name: New
+        execution {
+            sequence: 10
+        }
+        when {
+            event: click
+            selectionType: button
+            button: @cancel
+        }
+
+        action native-dialog-close (
+            action: closeDialog
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+    validation المبلغ (
+        name: المبلغ
+        execution {
+            sequence: 10
+        }
+        validation {
+            plsqlExpression: nvl(to_number(:P29_AMOUNT), 0) > 0
+        }
+        error {
+            errorMessage: المبلغ لازم يكون أكبر من صفر
+            associatedItem: @P29_AMOUNT
+        }
+    )
+
+    validation المبلغ-علي-الفاتورة (
+        name: المبلغ علي الفاتورة
+        execution {
+            sequence: 20
+        }
+        validation {
+            plsqlExpression: round(nvl(to_number(:P29_AMOUNT), 0), 2) <= pkg_payment.remaining_amount(:P29_INVOICE_ID)
+        }
+        error {
+            errorMessage: المبلغ أكبر من المتبقي على الفاتورة
+            associatedItem: @P29_AMOUNT
+        }
+    )
+
+    process new (
+        name: New
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                declare
+                  l_user users.user_id%type;
+                  l_pay  payments.payment_id%type;
+                begin
+                  select user_id into l_user
+                    from users where upper(username) = upper(:APP_USER);
+                
+                  pkg_payment.add_payment(
+                    p_invoice_id        => :P29_INVOICE_ID,
+                    p_payment_method_id => :P29_PAYMENT_METHOD_ID,
+                    p_amount            => :P29_AMOUNT,
+                    p_user_id           => l_user,
+                    p_notes             => :P29_NOTES,
+                    p_payment_id        => l_pay
+                  );
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+        }
+        successMessage {
+            successMessage: تم تسجيل الدفعة
+        }
+        advanced {
+            executionMappingIdentifier: 14489996611354907101
+        }
+        serverSideCondition {
+            whenButtonPressed: @pay
+        }
+    )
+
+)
+

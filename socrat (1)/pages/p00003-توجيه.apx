@@ -1,0 +1,48 @@
+page 3 (
+    name: توجيه
+    alias: توجيه
+    title: توجيه
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+
+    process new (
+        name: New
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                declare
+                  l_page number;
+                begin
+                  if apex_authorization.is_authorized('CUSTOMER_ONLY') then
+                    l_page := 18;   -- الصفحة الرئيسية للعميل
+                  elsif apex_authorization.is_authorized('manager_auth') then
+                     
+                    l_page := 1;    -- لوحة التحكم
+                    elsif apex_authorization.is_authorized('super_auth') then 
+                     l_page := 24; ------التنبيهات
+                  elsif apex_authorization.is_authorized('reception_auth') then
+                    l_page := 5;   -- كروت الصيانة
+                  elsif apex_authorization.is_authorized('stor_auth') then
+                    l_page := 8;    -- قائمة الأصناف
+                  else
+                    l_page := 1;
+                  end if;
+                
+                  apex_util.redirect_url(apex_page.get_url(p_page => l_page));
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+        advanced {
+            executionMappingIdentifier: 14912137407373701743
+        }
+    )
+
+)
+

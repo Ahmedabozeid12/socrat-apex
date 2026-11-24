@@ -1,0 +1,455 @@
+list navigation-menu (
+    name: Navigation Menu
+
+    entry home (
+        label: لوحة التحكم
+        icon {
+            imageIconCssClasses: fa-home
+        }
+        layout {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 1
+            }
+        }
+        security {
+            authorizationScheme: @manager-auth
+        }
+    )
+
+    entry إدارة-حجوزات-العملاء (
+        label: إدارة حجوزات العملاء
+        icon {
+            imageIconCssClasses: fa-table
+        }
+        layout {
+            sequence: 240
+            parentEntry: @التشغيل
+        }
+        isCurrent {
+            type: pages
+            pages: 40
+        }
+        link {
+            target: {
+                page: 40
+            }
+        }
+        security {
+            authorizationScheme: @reception-auth
+        }
+    )
+
+    entry الأدوار-والمستخدمين (
+        label: الأدوار والمستخدمين
+        icon {
+            imageIconCssClasses: fa-layout-header-sidebar-left
+        }
+        layout {
+            sequence: 170
+            parentEntry: @الإعدادات
+        }
+        isCurrent {
+            type: pages
+            pages: 9
+        }
+        link {
+            target: {
+                page: 9
+            }
+        }
+        security {
+            authorizationScheme: @manager-auth
+        }
+    )
+
+    entry الإعدادات (
+        label: الإعدادات
+        icon {
+            imageIconCssClasses: fa-sliders
+        }
+        layout {
+            sequence: 270
+        }
+        link {
+            target: {
+                type: url
+                url: #
+            }
+        }
+        serverSideCondition {
+            type: expression
+            plsqlExpression:
+                ```plsql
+                apex_authorization.is_authorized('super_auth')
+                or apex_authorization.is_authorized('manager_auth')
+                ```
+        }
+    )
+
+    entry التشغيل (
+        label: التشغيل
+        icon {
+            imageIconCssClasses: fa-cogs
+        }
+        layout {
+            sequence: 200
+        }
+        link {
+            target: {
+                type: url
+                url: #
+            }
+        }
+        serverSideCondition {
+            type: expression
+            plsqlExpression: apex_authorization.is_authorized('reception_auth')
+        }
+    )
+
+    entry الصفحة-الرئيسية (
+        label: الصفحة الرئيسية
+        icon {
+            imageIconCssClasses: fa-home
+        }
+        layout {
+            sequence: 190
+        }
+        isCurrent {
+            type: pages
+            pages: 18
+        }
+        link {
+            target: {
+                page: 18
+            }
+        }
+        security {
+            authorizationScheme: @customer-only
+        }
+    )
+
+    entry العملاء-والسيارات (
+        label: العملاء والسيارات
+        icon {
+            imageIconCssClasses: fa-id-card
+            attributes: nav-customers
+        }
+        layout {
+            sequence: 160
+            parentEntry: @التشغيل
+        }
+        isCurrent {
+            type: pages
+            pages: 5
+        }
+        link {
+            target: {
+                page: 5
+            }
+        }
+        security {
+            authorizationScheme: @reception-auth
+        }
+    )
+
+    entry الفواتير (
+        label: الفواتير
+        icon {
+            imageIconCssClasses: fa-file-text-o
+        }
+        layout {
+            sequence: 140
+            parentEntry: @المالية
+        }
+        isCurrent {
+            type: pages
+            pages: [
+                32
+                31
+            ]
+        }
+        link {
+            target: {
+                page: 32
+            }
+        }
+        security {
+            authorizationScheme: @manager-auth
+        }
+    )
+
+    entry المالية (
+        label: المالية
+        icon {
+            imageIconCssClasses: fa-money
+        }
+        layout {
+            sequence: 260
+        }
+        link {
+            target: {
+                type: url
+                url: #
+            }
+        }
+        serverSideCondition {
+            type: expression
+            plsqlExpression: apex_authorization.is_authorized('manager_auth')
+        }
+    )
+
+    entry المغسلة (
+        label: المغسلة
+        icon {
+            imageIconCssClasses: fa-tint
+        }
+        layout {
+            sequence: 150
+            parentEntry: @التشغيل
+        }
+        isCurrent {
+            type: pages
+            pages: 35
+        }
+        link {
+            target: {
+                page: 35
+            }
+        }
+        security {
+            authorizationScheme: @reception-auth
+        }
+    )
+
+    entry حجوزاتي (
+        label: حجوزاتي
+        icon {
+            imageIconCssClasses: fa-calendar-check-o
+        }
+        layout {
+            sequence: 230
+            parentEntry: @الصفحة-الرئيسية
+        }
+        isCurrent {
+            type: pages
+            pages: 38
+        }
+        link {
+            target: {
+                page: 38
+            }
+        }
+        security {
+            authorizationScheme: @customer-only
+        }
+    )
+
+    entry سجل-السيارة (
+        label: سجل السيارة
+        icon {
+            imageIconCssClasses: fa-history
+        }
+        layout {
+            sequence: 100
+            parentEntry: @التشغيل
+        }
+        isCurrent {
+            type: pages
+            pages: 22
+        }
+        link {
+            target: {
+                page: 22
+            }
+        }
+        security {
+            authorizationScheme: @reception-auth
+        }
+    )
+
+    entry سيارة-العميل (
+        label: سيارة العميل
+        icon {
+            imageIconCssClasses: fa-car
+        }
+        layout {
+            sequence: 200
+            parentEntry: @الصفحة-الرئيسية
+        }
+        isCurrent {
+            type: pages
+            pages: 23
+        }
+        link {
+            target: {
+                page: 23
+            }
+        }
+        security {
+            authorizationScheme: @customer-only
+        }
+    )
+
+    entry صرف-القطع (
+        label: صرف القطع
+        icon {
+            imageIconCssClasses: fa-sign-out
+        }
+        layout {
+            sequence: 90
+            parentEntry: @للمخزن
+        }
+        isCurrent {
+            type: pages
+            pages: 17
+        }
+        link {
+            target: {
+                page: 17
+            }
+        }
+        security {
+            authorizationScheme: @stor-auth
+        }
+    )
+
+    entry قائمة-الاصناف (
+        label: قائمة الاصناف
+        icon {
+            imageIconCssClasses: fa-cubes
+        }
+        layout {
+            sequence: 70
+            parentEntry: @للمخزن
+        }
+        isCurrent {
+            type: pages
+            pages: 8
+        }
+        link {
+            target: {
+                page: 8
+            }
+        }
+        security {
+            authorizationScheme: @stor-auth
+        }
+    )
+
+    entry قائمة-الخدمات (
+        label: قائمة الخدمات
+        icon {
+            imageIconCssClasses: fa-tags
+        }
+        layout {
+            sequence: 80
+            parentEntry: @الإعدادات
+        }
+        isCurrent {
+            type: pages
+            pages: 12
+        }
+        link {
+            target: {
+                page: 12
+            }
+        }
+        security {
+            authorizationScheme: @super-auth
+        }
+    )
+
+    entry قائمة-الفنيين (
+        label: قائمة الفنيين
+        icon {
+            imageIconCssClasses: fa-user-md
+        }
+        layout {
+            sequence: 60
+            parentEntry: @الإعدادات
+        }
+        isCurrent {
+            type: pages
+            pages: 30
+        }
+        link {
+            target: {
+                page: 30
+            }
+        }
+        security {
+            authorizationScheme: @super-auth
+        }
+    )
+
+    entry قائمة-الموردين (
+        label: قائمة الموردين
+        icon {
+            imageIconCssClasses: fa-truck
+        }
+        layout {
+            sequence: 120
+            parentEntry: @للمخزن
+        }
+        isCurrent {
+            type: pages
+            pages: 25
+        }
+        link {
+            target: {
+                page: 25
+            }
+        }
+        security {
+            authorizationScheme: @stor-auth
+        }
+    )
+
+    entry كروت-الصيانة (
+        label: كروت الصيانة
+        icon {
+            imageIconCssClasses: fa-wrench
+        }
+        layout {
+            sequence: 50
+            parentEntry: @التشغيل
+        }
+        isCurrent {
+            type: pages
+            pages: 20
+        }
+        link {
+            target: {
+                page: 20
+            }
+        }
+        security {
+            authorizationScheme: @reception-auth
+        }
+    )
+
+    entry للمخزن (
+        label: للمخزن
+        icon {
+            imageIconCssClasses: fa-cubes
+        }
+        layout {
+            sequence: 250
+        }
+        link {
+            target: {
+                type: url
+                url: #
+            }
+        }
+        serverSideCondition {
+            type: expression
+            plsqlExpression: apex_authorization.is_authorized('stor_auth')
+        }
+    )
+
+)
+

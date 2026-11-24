@@ -1,0 +1,26 @@
+lov الحالة (
+    name: الحالة
+    source {
+        location: staticValues
+    }
+
+    entry canceled (
+        sequence: 3
+        display: ملغية
+        return: CANCELED
+    )
+
+    entry completed (
+        sequence: 2
+        display: تمت
+        return: COMPLETED
+    )
+
+    entry pending (
+        sequence: 1
+        display: قيد الانتظار
+        return: PENDING
+    )
+
+)
+

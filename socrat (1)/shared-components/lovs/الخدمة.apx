@@ -1,0 +1,12 @@
+lov الخدمة (
+    name: الخدمة
+    source {
+        type: sqlQuery
+        sqlQuery: select service_name d, service_id r from services where is_active = 'Y' order by service_name
+    }
+    columnMapping {
+        return: R
+        display: D
+    }
+)
+

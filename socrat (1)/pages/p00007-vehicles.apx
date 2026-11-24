@@ -1,0 +1,543 @@
+page 7 (
+    name: اضافة سيارة
+    alias: VEHICLES
+    title: اضافة سيارة
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @/drawer
+        templateOptions: [
+            #DEFAULT#
+            js-dialog-class-t-Drawer--pullOutEnd
+        ]
+    }
+    dialog {
+        chained: false
+    }
+
+    region buttons (
+        name: Buttons
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: dialogFooter
+        }
+        appearance {
+            template: @/buttons-container
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region vehicles (
+        name: السيارات
+        title: السيارات
+        type: form
+        source {
+            location: localDatabase
+            tableName: VEHICLES
+            includeRowidColumn: true
+        }
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: [
+                #DEFAULT#
+                t-Form--stretchInputs
+            ]
+        }
+        edit {
+            enabled: true
+            allowedOperations: [
+                add
+                update
+                delete
+            ]
+        }
+    )
+
+    pageItem P7_COLOR (
+        type: textField
+        label {
+            label: اللون
+            alignment: left
+        }
+        layout {
+            sequence: 80
+            region: @vehicles
+            slot: regionBody
+            alignment: left
+            columnSpan: 4
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-paint-brush
+            width: 32
+        }
+        validation {
+            maxLength: 40
+        }
+        source {
+            formRegion: @vehicles
+            column: COLOR
+            dataType: varchar2
+        }
+    )
+
+    pageItem P7_CUSTOMER_ID (
+        type: hidden
+        layout {
+            sequence: 30
+            region: @vehicles
+            slot: regionBody
+        }
+        source {
+            formRegion: @vehicles
+            column: CUSTOMER_ID
+            dataType: number
+        }
+    )
+
+    pageItem P7_MAKE (
+        type: combobox
+        label {
+            label: الماركة
+            alignment: left
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select make
+                  from (select column_value as make
+                          from table(apex_t_varchar2('Mercedes-Benz', 'BMW', 'Audi',
+                                                     'Volkswagen', 'Porsche', 'Opel', 'Mini'))
+                        union
+                        select make
+                          from vehicles
+                         where make is not null)
+                 order by make
+                ```
+        }
+        layout {
+            sequence: 50
+            region: @vehicles
+            slot: regionBody
+            alignment: left
+            startNewRow: false
+            columnSpan: 4
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-car
+            width: 32
+        }
+        validation {
+            valueRequired: true
+            maxLength: 100
+        }
+        source {
+            formRegion: @vehicles
+            column: MAKE
+            dataType: varchar2
+        }
+    )
+
+    pageItem P7_MODEL (
+        type: textField
+        label {
+            label: الموديل
+            alignment: left
+        }
+        layout {
+            sequence: 60
+            region: @vehicles
+            slot: regionBody
+            alignment: left
+            columnSpan: 4
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-tag
+            width: 32
+        }
+        validation {
+            maxLength: 100
+        }
+        source {
+            formRegion: @vehicles
+            column: MODEL
+            dataType: varchar2
+        }
+    )
+
+    pageItem P7_PLATE_NUMBER (
+        type: textField
+        label {
+            label: رقم اللوحة
+            alignment: left
+        }
+        layout {
+            sequence: 40
+            region: @vehicles
+            slot: regionBody
+            alignment: left
+            columnSpan: 4
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-id-card-o
+            width: 32
+        }
+        validation {
+            valueRequired: true
+            maxLength: 100
+        }
+        source {
+            formRegion: @vehicles
+            column: PLATE_NUMBER
+            dataType: varchar2
+        }
+    )
+
+    pageItem P7_ROWID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @vehicles
+            slot: regionBody
+        }
+        source {
+            formRegion: @vehicles
+            column: ROWID
+            dataType: varchar2
+            primaryKey: true
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P7_VEHICLE_ID (
+        type: hidden
+        layout {
+            sequence: 20
+            region: @vehicles
+            slot: regionBody
+        }
+        source {
+            formRegion: @vehicles
+            column: VEHICLE_ID
+            dataType: number
+            primaryKey: true
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P7_VEHICLE_SIZE (
+        type: selectList
+        label {
+            label: الحجم
+            alignment: left
+        }
+        lov {
+            type: staticValues
+            staticValues: STATIC:صغيرة;SMALL,كبيرة;LARGE,دفع رباعي;SUV
+        }
+        layout {
+            sequence: 100
+            region: @vehicles
+            slot: regionBody
+            alignment: left
+            columnSpan: 4
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            height: 1
+        }
+        validation {
+            valueRequired: true
+        }
+        source {
+            formRegion: @vehicles
+            column: VEHICLE_SIZE
+            dataType: varchar2
+        }
+    )
+
+    pageItem P7_VIN (
+        type: textField
+        label {
+            label: رقم الشاسية
+            alignment: left
+        }
+        settings {
+            textCase: upper
+        }
+        layout {
+            sequence: 90
+            region: @vehicles
+            slot: regionBody
+            alignment: left
+            startNewRow: false
+            columnSpan: 4
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-barcode
+            width: 32
+        }
+        validation {
+            maxLength: 17
+        }
+        source {
+            formRegion: @vehicles
+            column: VIN
+            dataType: varchar2
+        }
+    )
+
+    pageItem P7_YEAR (
+        type: numberField
+        label {
+            label: السنة
+            alignment: left
+        }
+        layout {
+            sequence: 70
+            region: @vehicles
+            slot: regionBody
+            alignment: left
+            startNewRow: false
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-calendar
+            width: 32
+        }
+        validation {
+            maxLength: 255
+        }
+        source {
+            formRegion: @vehicles
+            column: YEAR
+            dataType: number
+        }
+    )
+
+    button cancel (
+        buttonName: CANCEL
+        label: الغاء
+        layout {
+            sequence: 10
+            region: @buttons
+            slot: close
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            cssClasses: s-btn-danger
+            icon: fa-times
+        }
+        behavior {
+            action: triggerAction
+        }
+
+        triggerAction native-dialog-cancel (
+            action: cancelDialog
+            execution {
+                sequence: 10
+            }
+        )
+
+    )
+
+    button create_1 (
+        buttonName: create
+        label: اضافة سيارة
+        layout {
+            sequence: 20
+            region: @buttons
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-save
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: insert
+        }
+        serverSideCondition {
+            type: itemIsNull
+            item: P7_VEHICLE_ID
+        }
+    )
+
+    button delete (
+        buttonName: DELETE
+        label: حذف
+        layout {
+            sequence: 20
+            region: @buttons
+            slot: delete
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            cssClasses: s-btn-danger
+            icon: fa-times
+        }
+        behavior {
+            executeValidations: false
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: delete
+            requiresConfirmation: true
+        }
+        confirmation {
+            message: &APP_TEXT$DELETE_MSG!RAW.
+            style: danger
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P7_VEHICLE_ID
+        }
+    )
+
+    button save (
+        buttonName: SAVE
+        label: حفظ التعديلات
+        layout {
+            sequence: 10
+            region: @buttons
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-save
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: update
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P7_VEHICLE_ID
+        }
+    )
+
+    validation new (
+        name: New
+        execution {
+            sequence: 10
+        }
+        validation {
+            type: noRowsReturned
+            sqlQuery:
+                ```sql
+                select 1 from vehicles
+                 where upper(replace(plate_number, ' ')) = upper(replace(:P7_PLATE_NUMBER, ' '))
+                   and vehicle_id <> nvl(:P7_VEHICLE_ID, -1)
+                ```
+        }
+        error {
+            errorMessage: رقم اللوحة ده متسجل قبل كده
+            associatedItem: @P7_PLATE_NUMBER
+        }
+    )
+
+    validation new_1 (
+        name: New
+        execution {
+            sequence: 20
+        }
+        validation {
+            plsqlExpression: ":P7_VIN is null or regexp_like(:P7_VIN, '^[A-HJ-NPR-Z0-9]{17}$')"
+        }
+        error {
+            errorMessage: رقم الشاسيه لازم يكون 17 حرف/رقم
+            associatedItem: @P7_VIN
+        }
+    )
+
+    process initialize-form-vehicles (
+        name: Initialize form Vehicles
+        type: formInitialization
+        formRegion: @vehicles
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+        advanced {
+            executionMappingIdentifier: 14830090606040345623
+        }
+    )
+
+    process process-form-vehicles (
+        name: Process form Vehicles
+        type: formAutoRowProcessing
+        formRegion: @vehicles
+        target {
+            preventLostUpdates: false
+        }
+        lockRow {
+            lockRow: false
+        }
+        execution {
+            sequence: 10
+        }
+        successMessage {
+            successMessage:
+                ```
+                تم اضافة السيارة بنجاح
+                
+                ```
+        }
+        advanced {
+            executionMappingIdentifier: 14830091398764345624
+        }
+        serverSideCondition {
+            whenButtonPressed: @create_1
+        }
+    )
+
+    branch (
+        execution {
+            sequence: 10
+        }
+        behavior {
+            target: {
+                page: 5
+                action: resetPagination
+            }
+        }
+    )
+
+)
+

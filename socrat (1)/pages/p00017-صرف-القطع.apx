@@ -1,0 +1,402 @@
+page 17 (
+    name: صرف القطع
+    alias: صرف-القطع
+    title: صرف القطع
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    css {
+        inline:
+            ```css
+            #issue-search .t-Region-body .row{align-items:center}
+            #issue-search .t-Button{width:100%;height:48px;justify-content:center;white-space:nowrap}
+            ```
+    }
+
+    region breadcrumb (
+        name: Breadcrumb
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region بحث (
+        name: بحث
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Region--scrollBody
+            ]
+        }
+    )
+
+    region صرف-الثطع (
+        name: صرف القطعة
+        title: تنبيه المخزن
+        type: dynamicContent
+        source {
+            plsqlFunctionBody:
+                ```plsql
+                declare
+                  l_cnt number;
+                begin
+                  select count(*) into l_cnt from parts where quantity_on_hand < reorder_level;
+                  if l_cnt > 0 then
+                    htp.p('<div class="low-alert">⚠ ' || l_cnt || ' أصناف تحت الحد الأدنى</div>');
+                  end if;
+                end;
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/alert
+            templateOptions: [
+                #DEFAULT#
+                t-Alert--horizontal
+                t-Alert--defaultIcons
+                t-Alert--warning
+            ]
+        }
+        serverSideCondition {
+            type: rowsReturned
+            sqlQuery: select 1 from parts where quantity_on_hand < reorder_level
+        }
+    )
+
+    region صرف-القطع (
+        name: صرف القطع
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select i.job_card_id,
+                       p.part_code,
+                       p.part_name,
+                       i.quantity_issued,
+                       to_char(i.unit_price, 'FM999G990D00')                       as unit_price,
+                       to_char(i.quantity_issued * i.unit_price, 'FM999G990D00')   as line_total,
+                       to_char(i.issue_date, 'DD/MM/YYYY HH24:MI')                 as issue_date,
+                       u.full_name                                                 as issued_by
+                  from parts_issued i
+                  join parts p on p.part_id = i.part_id
+                  join users u on u.user_id = i.issued_by_user_id
+                 where :P17_SEARCH is null
+                    or to_char(i.job_card_id) like '%' || :P17_SEARCH || '%'
+                    or upper(p.part_name) like '%' || upper(:P17_SEARCH) || '%'
+                    or upper(p.part_code) like '%' || upper(:P17_SEARCH) || '%'
+                 order by i.issue_date desc, i.parts_issued_id desc
+                ```
+            pageItemsToSubmit: P17_SEARCH
+        }
+        layout {
+            sequence: 30
+            slot: body
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--stretch
+                t-Report--staticRowColors
+                t-Report--rowHighlight
+                t-Report--horizontalBorders
+                t-Report--hideNoPagination
+            ]
+        }
+        messages {
+            whenNoDataFound: مفيش قطع مصروفة.
+        }
+
+        column ISSUED_BY (
+            reportColumnQueryId: 8
+            derivedColumn: N
+            heading {
+                heading: صرفها
+                alignment: end
+            }
+            layout {
+                sequence: 8
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column ISSUE_DATE (
+            reportColumnQueryId: 7
+            derivedColumn: N
+            heading {
+                heading: التاريخ
+                alignment: end
+            }
+            layout {
+                sequence: 7
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column JOB_CARD_ID (
+            reportColumnQueryId: 1
+            derivedColumn: N
+            heading {
+                heading: رقم الكارت
+                alignment: end
+            }
+            layout {
+                sequence: 1
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column LINE_TOTAL (
+            reportColumnQueryId: 6
+            derivedColumn: N
+            heading {
+                heading: الإجمالي
+                alignment: end
+            }
+            layout {
+                sequence: 6
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column PART_CODE (
+            reportColumnQueryId: 2
+            derivedColumn: N
+            heading {
+                heading: كود الصنف
+                alignment: end
+            }
+            layout {
+                sequence: 2
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column PART_NAME (
+            reportColumnQueryId: 3
+            derivedColumn: N
+            heading {
+                heading: اسم الصنف
+                alignment: end
+            }
+            layout {
+                sequence: 3
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column QUANTITY_ISSUED (
+            reportColumnQueryId: 4
+            derivedColumn: N
+            heading {
+                heading: الكمية
+                alignment: end
+            }
+            layout {
+                sequence: 4
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+        column UNIT_PRICE (
+            reportColumnQueryId: 5
+            derivedColumn: N
+            heading {
+                heading: سعر الوحدة
+                alignment: end
+            }
+            layout {
+                sequence: 5
+            }
+            sorting {
+                sortable: false
+            }
+        )
+
+    )
+
+    pageItem P17_SEARCH (
+        type: textField
+        label {
+            label: رقم الكارت أو اسم الصنف
+            alignment: left
+        }
+        layout {
+            sequence: 10
+            region: @بحث
+            slot: regionBody
+            alignment: left
+            columnSpan: 8
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            icon: fa-search
+            width: 30
+        }
+    )
+
+    button clear (
+        buttonName: CLEAR
+        label: عرض الكل
+        layout {
+            sequence: 30
+            region: @بحث
+            slot: regionBody
+            startNewRow: false
+            columnSpan: 2
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+                t-Button--stretch
+            ]
+            cssClasses: s-btn-outline
+            icon: fa-list
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 17
+                clearCache: 17
+            }
+        }
+    )
+
+    button new (
+        buttonName: صرف
+        label: صرف قطعه
+        layout {
+            sequence: 10
+            region: @صرف-القطع
+            slot: aboveBox
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-sign-out
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 19
+                clearCache: 19
+            }
+        }
+    )
+
+    button search (
+        buttonName: SEARCH
+        label: بحث
+        layout {
+            sequence: 20
+            region: @بحث
+            slot: regionBody
+            columnSpan: 2
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+                t-Button--stretch
+            ]
+            icon: fa-search
+        }
+        behavior {
+            executeValidations: false
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    dynamicAction new (
+        name: New
+        execution {
+            sequence: 10
+        }
+        when {
+            event: apexafterclosedialog
+            selectionType: button
+            button: @new
+        }
+
+        action native-refresh (
+            action: refresh
+            affectedElements {
+                selectionType: region
+                region: @صرف-القطع
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+        action native-show (
+            action: show
+            affectedElements {
+                selectionType: region
+                region: @صرف-الثطع
+            }
+            execution {
+                sequence: 20
+            }
+        )
+
+    )
+
+)
+

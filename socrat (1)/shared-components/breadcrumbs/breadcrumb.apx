@@ -1,0 +1,278 @@
+breadcrumb breadcrumb (
+    name: Breadcrumb
+
+    entry home (
+        name: Home
+        pageNumber: 1
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 1
+            }
+        }
+    )
+
+    entry إدارة-حجوزات-العملاء (
+        name: إدارة حجوزات العملاء
+        pageNumber: 40
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 40
+            }
+        }
+    )
+
+    entry اضافة-سيارة-عميل (
+        name: اضافة سيارة عميل
+        pageNumber: 33
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 33
+            }
+        }
+    )
+
+    entry الأدوار-والمستخدمين (
+        name: الأدوار والمستخدمين
+        pageNumber: 9
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 9
+            }
+        }
+    )
+
+    entry التنبيهات (
+        name: التنبيهات
+        pageNumber: 24
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 24
+            }
+        }
+    )
+
+    entry الصفحة-الرئيسية (
+        name: الصفحة الرئيسية
+        pageNumber: 18
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 18
+            }
+        }
+    )
+
+    entry العملاء-والسيارات (
+        name: العملاء والسيارات
+        pageNumber: 5
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 5
+            }
+        }
+    )
+
+    entry الفواتير (
+        name: الفواتير
+        pageNumber: 32
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 32
+            }
+        }
+    )
+
+    entry المغسلة (
+        name: المغسلة
+        pageNumber: 35
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 35
+            }
+        }
+    )
+
+    entry تسجيل-عميل-جديد (
+        name: تسجيل عميل جديد
+        pageNumber: 15
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 15
+            }
+        }
+    )
+
+    entry حجز-موعد-جديد (
+        name: حجز موعد جديد
+        pageNumber: 37
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 37
+            }
+        }
+    )
+
+    entry حجوزاتي (
+        name: حجوزاتي
+        pageNumber: 38
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 38
+            }
+        }
+    )
+
+    entry سجل-السيارة (
+        name: سجل السيارة
+        pageNumber: 22
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 22
+            }
+        }
+    )
+
+    entry سيارة-العميل (
+        name: سيارة العميل
+        pageNumber: 23
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 23
+            }
+        }
+    )
+
+    entry صرف-القطع (
+        name: صرف القطع
+        pageNumber: 17
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 17
+            }
+        }
+    )
+
+    entry عرض-الفاتورة (
+        name: عرض الفاتورة
+        pageNumber: 31
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 31
+            }
+        }
+    )
+
+    entry قائمة-الاصناف (
+        name: قائمة الاصناف
+        pageNumber: 8
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 8
+            }
+        }
+    )
+
+    entry قائمة-الخدمات (
+        name: قائمة الخدمات
+        pageNumber: 12
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 12
+            }
+        }
+    )
+
+    entry قائمة-الفنيين (
+        name: قائمة الفنيين
+        pageNumber: 30
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 30
+            }
+        }
+    )
+
+    entry قائمة-الموردين (
+        name: قائمة الموردين
+        pageNumber: 25
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 25
+            }
+        }
+    )
+
+    entry كروت-الصيانة (
+        name: كروت الصيانة
+        pageNumber: 20
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 20
+            }
+        }
+    )
+
+)
+

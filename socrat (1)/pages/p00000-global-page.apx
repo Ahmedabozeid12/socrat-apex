@@ -1,0 +1,30 @@
+page 0 (
+    name: Global Page
+
+    region new (
+        name: New
+        type: staticContent
+        source {
+            htmlCode:
+                ```html
+                <div id="s-welcome-data" hidden
+                     data-name="&AI_FULL_NAME!ATTR."
+                     data-role="&AI_ROLE!ATTR."
+                     data-logo="#APP_FILES#logo/socrat-logo.svg"></div>
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+        serverSideCondition {
+            type: userIsAuthenticated
+        }
+    )
+
+)
+

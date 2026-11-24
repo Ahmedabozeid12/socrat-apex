@@ -1,0 +1,84 @@
+appComputation ai-alert-count (
+    itemName: AI_ALERT_COUNT
+    execution {
+        sequence: 10
+        point: beforeHeader
+    }
+    computation {
+        type: sqlQuerySingleValue
+        sqlQuery:
+            ```sql
+            select nullif(
+                     (select count(*)
+                        from job_cards c
+                        join vehicles v   on v.vehicle_id = c.vehicle_id
+                        join customers cu on cu.customer_id = v.customer_id
+                       where c.expected_delivery_date < trunc(sysdate)
+                         and c.status_id not in (7, 8))
+                   + (select count(*)
+                        from parts
+                       where quantity_on_hand < reorder_level),
+                   0) as alert_count
+              from dual
+            ```
+    }
+    error {
+        errorMessage: لايوجد تنبيهات
+    }
+    serverSideCondition {
+        type: expression
+        plsqlExpression:
+            ```plsql
+            apex_authorization.is_authorized('manager_auth')
+            or apex_authorization.is_authorized('stor_auth') 
+            ```
+    }
+)
+
+appComputation ai-full-name (
+    itemName: AI_FULL_NAME
+    execution {
+        sequence: 10
+        point: afterAuthentication
+    }
+    computation {
+        type: functionBody
+        plsqlFunctionBody:
+            ```plsql
+            declare
+              l_name varchar2(200);
+            begin
+              select FULL_NAME
+                into l_name
+                from USERS          -- غيّرها لاسم جدول المستخدمين عندك
+               where upper(USERNAME) = upper(:APP_USER);
+              return l_name;
+            exception
+              when no_data_found then
+                return :APP_USER;
+            end;
+            ```
+    }
+)
+
+appComputation ai-role (
+    itemName: AI_ROLE
+    execution {
+        sequence: 10
+        point: afterAuthentication
+    }
+    computation {
+        type: functionBody
+        plsqlFunctionBody:
+            ```plsql
+            return case
+              when apex_authorization.is_authorized('manager_auth')   then 'manager'
+              when apex_authorization.is_authorized('super_auth')     then 'super'
+              when apex_authorization.is_authorized('reception_auth') then 'reception'
+              when apex_authorization.is_authorized('stor_auth')      then 'store'
+              when apex_authorization.is_authorized('CUSTOMER_ONLY')  then 'customer'
+            end;
+            ```
+    }
+)
+
